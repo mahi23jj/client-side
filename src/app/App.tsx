@@ -8,7 +8,8 @@ import { SavedProductsPage } from "./pages/SavedProductsPage";
 import { SearchResultsPage } from "./pages/SearchResultsPage";
 import { AppProvider } from "./contexts/AppContext";
 import React from "react";
-import { saveTokenFromUrl } from "./utils/auth";
+import { getTokenFromUrl } from "./utils/auth";
+import { telegramLogin } from "./services/authApi";
 
 type Page =
   | { type: "home" }
@@ -20,25 +21,15 @@ type Page =
   | { type: "search"; query: string };
 
 export default function App() {
+  const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
-
-    console.log("Full URL:", window.location.href);
-  
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get("token");
-  
-    console.log("Token from URL:", token);
-  
-    if (token) {
-      localStorage.setItem("token", token);
-      console.log("Token saved successfully");
-    } else {
-      console.error("No token found in URL");
+    const tokenFromUrl = getTokenFromUrl();
+    if (tokenFromUrl) {
+      setToken(tokenFromUrl);
+      // Optionally clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
     }
-  
-    console.log("Token in localStorage:", localStorage.getItem("token"));
-  
   }, []);
     
   const [currentPage, setCurrentPage] = useState<Page>({ type: "home" });
