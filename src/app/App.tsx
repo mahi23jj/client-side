@@ -24,11 +24,13 @@ export default function App() {
   const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
-    const tokenFromUrl = getTokenFromUrl();
-    if (tokenFromUrl) {
-      setToken(tokenFromUrl);
-      // Optionally clean up URL
-      window.history.replaceState({}, document.title, window.location.pathname);
+    const token = new URLSearchParams(window.location.search).get("token");
+    if (token) {
+      fetch("https://backend-ikou.onrender.com/api/auth/me", {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(user => setUser(user));
     }
   }, []);
     
@@ -122,4 +124,8 @@ export default function App() {
       </div>
     </AppProvider>
   );
+}
+
+function setUser(user: any): any {
+  throw new Error("Function not implemented.");
 }
