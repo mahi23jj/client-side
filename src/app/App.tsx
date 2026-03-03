@@ -21,17 +21,33 @@ type Page =
   | { type: "search"; query: string };
 
 export default function App() {
-  const [token, setToken] = useState<string | null>(null);
-
+  const [user, setUser] = useState<any>(null);
+  const API_BASE_URL = "https://backend-ikou.onrender.com/api";
   useEffect(() => {
-    const token = new URLSearchParams(window.location.search).get("token");
-    if (token) {
-      fetch("https://backend-ikou.onrender.com/api/me", {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-        .then(res => res.json())
-        .then(user => setUser(user));
+    async function authenticate() {
+      const token = getTokenFromUrl();
+      if (!token) return;
+
+      // Save token for future requests
+      localStorage.setItem("token", token);
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/me`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const userData = await res.json();
+        setUser(userData);
+
+        // Remove token from URL for security
+        window.history.replaceState({}, document.title, "/");
+      } catch (err) {
+        console.error("Failed to fetch user", err);
+      }
     }
+
+    authenticate();
   }, []);
     
   const [currentPage, setCurrentPage] = useState<Page>({ type: "home" });
