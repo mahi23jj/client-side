@@ -26,7 +26,7 @@ export default function App() {
   useEffect(() => {
     const token = new URLSearchParams(window.location.search).get("token");
     if (token) {
-      fetch("https://backend-ikou.onrender.com/api/auth/me", {
+      fetch("https://backend-ikou.onrender.com/api/me", {
         headers: { Authorization: `Bearer ${token}` }
       })
         .then(res => res.json())
