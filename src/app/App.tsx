@@ -8,8 +8,11 @@ import { SavedProductsPage } from "./pages/SavedProductsPage";
 import { SearchResultsPage } from "./pages/SearchResultsPage";
 import { AppProvider } from "./contexts/AppContext";
 import React from "react";
-import { getTokenFromUrl } from "./utils/auth";
+
 import { telegramLogin } from "./services/authApi";
+import { apiFetch } from "./services/clientApi";
+
+import { getTokenFromUrl } from "./utils/auth";
 
 type Page =
   | { type: "home" }
@@ -21,35 +24,32 @@ type Page =
   | { type: "search"; query: string };
 
 export default function App() {
-  const [user, setUser] = useState<any>(null);
-  const API_BASE_URL = "https://backend-ikou.onrender.com/api";
+ 
   useEffect(() => {
     async function authenticate() {
       const token = getTokenFromUrl();
       if (!token) return;
-
-      // Save token for future requests
-      localStorage.setItem("token", token);
-
+  
       try {
-        const res = await fetch(`${API_BASE_URL}/api/me`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const userData = await res.json();
+        const userData = await apiFetch("/me", {}, token);
         setUser(userData);
-
-        // Remove token from URL for security
-        window.history.replaceState({}, document.title, "/");
+  
+        // Fetch products
+        const products = await apiFetch("/products", {}, token);
+        products(products);
+  
+        // Fetch reviews
+        const reviews = await apiFetch(`/review/${products}`, {}, token);
+        reviews(reviews);
+  
+        window.history.replaceState({}, document.title, "/"); // remove token from URL
       } catch (err) {
-        console.error("Failed to fetch user", err);
+        console.error("API fetch failed", err);
       }
     }
-
+  
     authenticate();
   }, []);
-    
   const [currentPage, setCurrentPage] = useState<Page>({ type: "home" });
   const [pageHistory, setPageHistory] = useState<Page[]>([{ type: "home" }]);
 
@@ -145,3 +145,11 @@ export default function App() {
 function setUser(user: any): any {
   throw new Error("Function not implemented.");
 }
+function setError(message: any) {
+  throw new Error("Function not implemented.");
+}
+
+function setLoading(arg0: boolean) {
+  throw new Error("Function not implemented.");
+}
+
