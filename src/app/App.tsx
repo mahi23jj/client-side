@@ -13,6 +13,7 @@ import { telegramLogin } from "./services/authApi";
 import { apiFetch } from "./services/clientApi";
 
 import { getTokenFromUrl } from "./utils/auth";
+import { authenticateTelegram } from "./utils/getToken";
 
 type Page =
   | { type: "home" }
@@ -25,7 +26,7 @@ type Page =
 
 export default function App() {
  
-  useEffect(() => {
+  /*useEffect(() => {
     async function authenticate() {
       const token = getTokenFromUrl();
       if (!token) return;
@@ -49,7 +50,11 @@ export default function App() {
     }
   
     authenticate();
+  }, []);*/
+  useEffect(() => {
+    authenticateTelegram();
   }, []);
+
   const [currentPage, setCurrentPage] = useState<Page>({ type: "home" });
   const [pageHistory, setPageHistory] = useState<Page[]>([{ type: "home" }]);
 
