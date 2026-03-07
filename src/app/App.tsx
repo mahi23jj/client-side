@@ -51,9 +51,13 @@ export default function App() {
   
     authenticate();
   }, []);*/
+  console.log("App component loaded");
+
   useEffect(() => {
+    console.log("useEffect triggered");
     authenticateTelegram();
   }, []);
+ 
 
   const [currentPage, setCurrentPage] = useState<Page>({ type: "home" });
   const [pageHistory, setPageHistory] = useState<Page[]>([{ type: "home" }]);
