@@ -52,9 +52,11 @@ export default function App() {
     authenticate();
   }, []);*/
   console.log("App component loaded");
+  alert("App component loaded");
 
   useEffect(() => {
     console.log("useEffect triggered");
+    alert("useEffect triggered");
     authenticateTelegram();
   }, []);
  

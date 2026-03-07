@@ -9,6 +9,7 @@ export async function authenticateTelegram() {
     tg.ready();
   
     const initData = tg.initData;
+    
   
     if (!initData) {
       console.error("Telegram initData missing");
