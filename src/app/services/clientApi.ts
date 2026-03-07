@@ -1,17 +1,6 @@
 // src/services/clientApi.ts
 const API_BASE_URL = "https://backend-ikou.onrender.com/api";
-
-/**
- * Get token from URL query params
- */
-function getTokenFromUrl(): string | null {
-  const params = new URLSearchParams(window.location.search);
-  const token = params.get("token");
-  if (!token) {
-    console.warn("No token found in URL");
-  }
-  return token;
-}
+import { getToken } from "../utils/auth";
 
 /**
  * Wrapper fetch function for all API calls
@@ -24,8 +13,7 @@ export async function apiFetch(
   options: RequestInit = {},
   token?: string
 ) {
-  // Use provided token or read from URL
-  const authToken = token || getTokenFromUrl();
+  const authToken = token || getToken();
   if (!authToken) throw new Error("No auth token found. Please login via Telegram bot.");
 
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {

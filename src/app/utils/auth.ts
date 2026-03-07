@@ -1,17 +1,17 @@
 // src/utils/auth.ts
 
+const AUTH_TOKEN_KEY = "token";
+
 /**
  * Extract the Telegram Web App token from the URL
  */
 export function getTokenFromUrl(): string | null {
   const params = new URLSearchParams(window.location.search);
-  const token = params.get("token");
-  if (!token) {
-    console.warn("No token found in URL");
-  } else {
-    console.log("Extracted token from URL:", token);
-  }
-  return token;
+  return params.get("token");
+}
+
+export function getTokenFromStorage(): string | null {
+  return localStorage.getItem(AUTH_TOKEN_KEY);
 }
 
 /**
@@ -28,7 +28,7 @@ export function removeTokenFromUrl() {
  * Reads from URL (preferred) or fallback state/localStorage if needed
  */
 export function getToken(): string {
-  const token = getTokenFromUrl();
+  const token = getTokenFromUrl() || getTokenFromStorage();
   if (!token) throw new Error("No auth token found. Please login via Telegram bot.");
   return token;
 }
