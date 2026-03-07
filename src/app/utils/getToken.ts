@@ -1,39 +1,35 @@
 export async function authenticateTelegram() {
-    const tg = (window as any).Telegram?.WebApp;
+    // Read token from URL
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
   
-    if (!tg) {
-      console.error("Not running inside Telegram");
+    if (!token) {
+      console.error("No token found in URL");
       return;
     }
   
-    tg.ready();
+    console.log("Token from URL:", token);
   
-    const initData = tg.initData;
-    
+    try {
+      // Optional: validate token with backend (recommended)
+      const res = await fetch(`https://backend-ikou.onrender.com/api/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
   
-    if (!initData) {
-      console.error("Telegram initData missing");
-      return;
+      if (!res.ok) throw new Error("Token validation failed");
+  
+      const data = await res.json();
+      console.log("User data:", data);
+  
+      // Save token locally for API calls
+      localStorage.setItem("token", token);
+    } catch (err) {
+      console.error("Token validation failed", err);
+    } finally {
+      // Remove token from URL for security
+      if (window.history.replaceState) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
     }
-  
-    console.log("Authenticating with Telegram");
-  
-    const res = await fetch("https://backend-ikou.onrender.com/auth/telegram", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ initData }),
-    });
-  
-    if (!res.ok) {
-      throw new Error("Auth request failed");
-    }
-  
-    const data = await res.json();
-  
-    localStorage.setItem("token", data.token);
-  
-    console.log("User authenticated");
   }
   
