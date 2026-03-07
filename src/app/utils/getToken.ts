@@ -7,6 +7,7 @@ export async function authenticateTelegram() {
     }
   
     const initData = tg.initData;
+    console.log("Telegram initData:", initData);
   
     try {
       const res = await fetch("https://backend-ikou.onrender.com/auth/telegram", {
@@ -18,6 +19,7 @@ export async function authenticateTelegram() {
       });
   
       const data = await res.json();
+      console.log("Telegram auth response:", data);
   
       localStorage.setItem("token", data.token);
     } catch (err) {
