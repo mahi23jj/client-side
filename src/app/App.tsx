@@ -8,12 +8,15 @@ import { SavedProductsPage } from "./pages/SavedProductsPage";
 import { SearchResultsPage } from "./pages/SearchResultsPage";
 import { AppProvider } from "./contexts/AppContext";
 import React from "react";
-
-import { telegramLogin } from "./services/authApi";
-import { apiFetch } from "./services/clientApi";
-
-import { getTokenFromUrl } from "./utils/auth";
 import { authenticateTelegram } from "./utils/getToken";
+
+const AUTH_DEBUG_PREFIX = "[AUTH][App]";
+
+function maskToken(token: string | null | undefined): string {
+  if (!token) return "<none>";
+  if (token.length <= 12) return `${token.slice(0, 4)}...`;
+  return `${token.slice(0, 8)}...${token.slice(-4)} (len=${token.length})`;
+}
 
 type Page =
   | { type: "home" }
@@ -51,13 +54,29 @@ export default function App() {
   
     authenticate();
   }, []);*/
-  console.log("App component loaded");
-  alert("App component loaded");
-
   useEffect(() => {
-    console.log("useEffect triggered");
-    alert("useEffect triggered");
-    authenticateTelegram();
+    console.log(`${AUTH_DEBUG_PREFIX} bootstrap start`, {
+      href: window.location.href,
+      hasTokenInUrl: new URLSearchParams(window.location.search).has("token"),
+    });
+
+    const runAuthentication = async () => {
+      try {
+        const token = await authenticateTelegram();
+        const storedToken = localStorage.getItem("token");
+
+        console.log(`${AUTH_DEBUG_PREFIX} bootstrap result`, {
+          returnedToken: maskToken(token),
+          storedToken: maskToken(storedToken),
+          hasStoredToken: Boolean(storedToken),
+          currentUrl: window.location.href,
+        });
+      } catch (error) {
+        console.error(`${AUTH_DEBUG_PREFIX} bootstrap error`, error);
+      }
+    };
+
+    runAuthentication();
   }, []);
  
 
