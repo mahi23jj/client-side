@@ -4,6 +4,8 @@ import "./styles/index.css";
 import React from "react";
 //import { BrowserRouter } from "react-router-dom";
 
+
+// If the URL is "/debug", display the current URL in the body instead of rendering the app
 // This is a temporary solution to display the current URL in the body
 
 document.body.innerText = window.location.href;
