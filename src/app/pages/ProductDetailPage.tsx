@@ -11,6 +11,7 @@ import { getProductDetails } from "../services/productsApi";
 import React from "react";
 import { saveProduct, unsaveProduct } from "../services/savedApi";
 import { getReviewsByProduct } from "../services/reviewApi";
+import { trackContactClick, trackShopView } from "../services/engagementApi";
 
 interface ProductDetailPageProps {
   productId: string;
@@ -111,6 +112,9 @@ export function ProductDetailPage({
 
   const handleContactSeller = () => {
     if (shop?.seller?.user?.telegramId) {
+
+      trackContactClick(shop.id).catch(() => {});  //track contact click,
+      
       window.open(
         `https://t.me/${shop.seller.user.telegramId}`,
         "_blank"
@@ -136,6 +140,17 @@ export function ProductDetailPage({
     } finally {
       setSaving(false);
     }
+  };
+
+//engagment shop view tracting
+  const handleViewShop = async () => {
+    try {
+      trackShopView(shop.id).catch(() => {}); // fire and forget
+    } catch (err) {
+      console.error(err);
+    }
+  
+    onViewShop(shop.id);
   };
 
   return (
@@ -215,7 +230,7 @@ export function ProductDetailPage({
         <h3>{shop.shopName}</h3>
 
         <button
-          onClick={() => onViewShop(shop.id)}
+          onClick={handleViewShop}
           className="w-full mt-2 bg-gray-100 py-2 rounded"
         >
           View Shop

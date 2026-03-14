@@ -9,6 +9,7 @@ import { ProductCardProduct, Shop } from "../../types/api";
 import { reportShop } from "../services/reportApi";
 import { toggleFollowShopApi } from "../services/followApi";
 import { Productdisplay } from "../components/RatingStars";
+import { trackSocialMediaClick } from "../services/engagementApi";
 
 interface ShopDetailPageProps {
   shopId: string;
@@ -91,6 +92,15 @@ export function ShopDetailPage({
       alert(err.message);
     }
   };
+// Track social media click and open link
+  const handleSocialClick = (url: string) => {
+    if (!url) return;
+  
+    // send engagement event (do not block UI)
+    trackSocialMediaClick(shopId).catch(() => {});
+  
+    window.open(url, "_blank");
+  };
 
   const handleReportSubmit = async (reason: string) => {
     try {
@@ -154,26 +164,26 @@ export function ShopDetailPage({
         {(shop.seller.instagram || shop.seller.tiktok) && (
           <div className="flex gap-2 mb-4">
             {shop.seller.instagram && (
-              <a
-                href={`https://instagram.com/${shop.seller.instagram}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg text-sm hover:bg-gray-200 transition-colors"
-              >
-                <Instagram className="w-4 h-4" />
-                Instagram
-              </a>
+              <button
+              onClick={() =>
+                handleSocialClick(`https://instagram.com/${shop.seller.instagram}`)
+              }
+              className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg text-sm hover:bg-gray-200 transition-colors"
+            >
+              <Instagram className="w-4 h-4" />
+              Instagram
+            </button>
             )}
             {shop.seller.tiktok && (
-              <a
-                href={`https://tiktok.com/@${shop.seller.tiktok}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg text-sm hover:bg-gray-200 transition-colors"
-              >
-                <Facebook className="w-4 h-4" />
-                Tiktok
-              </a>
+              <button
+              onClick={() =>
+                handleSocialClick(`https://tiktok.com/@${shop.seller.tiktok}`)
+              }
+              className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg text-sm hover:bg-gray-200 transition-colors"
+            >
+              <Facebook className="w-4 h-4" />
+              Tiktok
+            </button>
             )}
           </div>
         )}
