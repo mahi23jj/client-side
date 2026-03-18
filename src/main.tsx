@@ -8,10 +8,9 @@ import React from "react";
 // If the URL is "/debug", display the current URL in the body instead of rendering the app
 // This is a temporary solution to display the current URL in the body
 
-document.body.innerText = window.location.href;
-
-// if (window.location.pathname === "/debug") {
-//   document.body.innerText = window.location.href;
-// } else {
-//   createRoot(document.getElementById("root")!).render(<App />);
-// }
+//document.body.innerText = window.location.href;
+ if (window.location.pathname === "/debug") { 
+      document.body.innerText = window.location.href;
+ } else {
+  createRoot(document.getElementById("root")!).render(<App />);
+}
