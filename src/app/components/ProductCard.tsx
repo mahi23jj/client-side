@@ -26,7 +26,7 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
       </div>
       <div className="p-3">
         <h3 className="line-clamp-1 mb-1">{product.name}</h3>
-        <p className="text-sm text-gray-500 mb-2">{product.shopName}</p>
+        <p className="text-sm text-gray-500 mb-2"> {product.shop?.shopName}</p>
         <div className="flex items-center gap-1 mb-2">
           <StarRating rating={product.ratingAverage}  size="sm" />
           <span className="text-xs text-gray-500">

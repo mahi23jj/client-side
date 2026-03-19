@@ -1,10 +1,11 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
 import { ArrowLeft, SlidersHorizontal } from "lucide-react";
-//import { Product } from "../types"; // your type definitions
 import { ProductCard } from "../components/ProductCard";
 import { EmptyState } from "../components/EmptyState";
 import { getProductsByCategory } from "../services/productsApi";
-import { Product, ProductCardProduct } from "../../types/api";
+import { ProductCardProduct } from "../../types/api";
 
 interface CategoryProductsPageProps {
   categoryId: string;
@@ -22,8 +23,7 @@ export function CategoryProductsPage({
   const [productsList, setProductsList] = useState<ProductCardProduct[]>([]);
   const [categoryName, setCategoryName] = useState<string>("");
 
-  // Fetch products for this category
- 
+  // Fetch products
   useEffect(() => {
     getProductsByCategory(categoryId)
       .then((data: any[]) => {
@@ -35,35 +35,39 @@ export function CategoryProductsPage({
           shopId: p.shop?.id || p.shopId || "",
           shopName: p.shop?.shopName || "Unknown",
           description: p.description || "",
-          rating: p.ratingAverage || 0,       // for display in ProductCard
+          rating: p.ratingAverage || 0,
           reviewCount: p.reviewCount || 0,
-          ratingAverage: p.ratingAverage || 0, // ⚠ include this to satisfy type
+          ratingAverage: p.ratingAverage || 0,
         }));
         setProductsList(mapped);
-  
         if (data[0]?.category?.name) setCategoryName(data[0].category.name);
       })
       .catch((err) => console.error("Error fetching products:", err));
   }, [categoryId]);
-  // Sorting
+
+  // Sort products
   const sortedProducts = [...productsList].sort((a, b) => {
     if (sortBy === "price-low") return a.price - b.price;
     if (sortBy === "price-high") return b.price - a.price;
-    return 0; // newest or default
+    return 0;
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
+
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+      <div className=" backdrop-blur-sm border-b sticky top-0 z-10">
         <div className="px-4 py-3">
           <div className="flex items-center gap-3 mb-3">
-            <button onClick={onBack} className="p-1 hover:bg-gray-100 rounded-lg">
-              <ArrowLeft className="w-5 h-5" />
+            <button
+              onClick={onBack}
+              className="p-1 hover:bg-blue-100 rounded-lg transition"
+            >
+              <ArrowLeft className="w-5 h-5 text-blue-900" />
             </button>
             <div>
-              <h1 className="text-lg">{categoryName || "Category"}</h1>
-              <p className="text-sm text-gray-500">{sortedProducts.length} products</p>
+              <h1 className="text-lg font-medium text-blue-900">{categoryName || "Category"}</h1>
+              <p className="text-sm text-blue-800">{sortedProducts.length} products</p>
             </div>
           </div>
 
@@ -71,15 +75,15 @@ export function CategoryProductsPage({
           <div className="flex gap-2">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="px-3 py-1.5 bg-gray-100 rounded-lg text-sm flex items-center gap-2"
+              className="px-3 py-1.5 bg-blue-50 backdrop-blur-sm rounded-lg text-sm flex items-center gap-2 hover:bg-blue-100 transition"
             >
-              <SlidersHorizontal className="w-4 h-4" />
+              <SlidersHorizontal className="w-4 h-4 text-blue-900" />
               Filters
             </button>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="px-3 py-1.5 bg-gray-100 rounded-lg text-sm flex-1"
+              className="px-3 py-1.5 bg-blue-50 backdrop-blur-sm rounded-lg text-sm flex-1 hover:bg-blue-100 transition text-blue-900"
             >
               <option value="newest">Newest</option>
               <option value="price-low">Price: Low to High</option>
@@ -100,11 +104,12 @@ export function CategoryProductsPage({
         ) : (
           <div className="grid grid-cols-2 gap-3">
             {sortedProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onClick={() => onProductSelect(product.id)}
-              />
+              <div key={product.id} className="transition hover:scale-[1.02]">
+                <ProductCard
+                  product={product}
+                  onClick={() => onProductSelect(product.id)}
+                />
+              </div>
             ))}
           </div>
         )}

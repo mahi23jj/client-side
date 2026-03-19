@@ -81,6 +81,9 @@ shopName: string;
 rating: number;        // ✅ REQUIRED
 reviewCount: number;   // ✅ REQUIRED
 ratingAverage: number;  // <-- add this if you really want
+shop?: {
+  shopName: string;
+};
 }
 
 export interface Category {
