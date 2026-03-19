@@ -90,7 +90,7 @@ export function HomePage({
         </div>
       </div>
 
-      {/* Categories Section/part*/}
+      {/* Categories Section*/}
 
       <div className="p-4">
         <h2 className="text-lg font-bold text-blue-900 tracking-tight mb-4">
