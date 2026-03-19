@@ -1,5 +1,6 @@
 import { ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
+import { useHistory } from 'react-router-dom';
 
 interface HeaderProps {
   title: string;
@@ -7,13 +8,13 @@ interface HeaderProps {
 }
 
 export function Header({ title, showBack = true }: HeaderProps) {
-  const navigate = useNavigate();
+  const history = useHistory();
 
   return (
     <header className="sticky top-0 z-10 flex items-center gap-3 px-4 py-4 bg-white border-b border-gray-200">
       {showBack && (
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => history.goBack()}
           className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors"
           aria-label="Go back"
         >
