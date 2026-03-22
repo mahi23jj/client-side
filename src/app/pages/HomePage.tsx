@@ -5,6 +5,8 @@ import { useAppContext } from "../contexts/AppContext";
 import React, { useEffect, useState } from "react";
 import { getCategories } from "../services/categoriesApi";
 import { Category } from "../../types/api";
+import { searchProducts } from "../services/productsApi";
+import { Product } from "../data/data";
 
 interface HomePageProps {
   onCategorySelect: (categoryId: string) => void;
@@ -22,11 +24,21 @@ export function HomePage({
   const [categoriesList, setCategoriesList] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchResults, setSearchResults] = useState<Product[]>([]);
+  const [searching, setSearching] = useState(false);
+  
 
-  const handleSearch = (query: string) => {
-    if (query.trim()) onSearch(query);
+  const handleSearch = async (query: string) => {
+    if (!query.trim()) return;
+    setSearching(true);
+    const results = await searchProducts(query);
+    setSearchResults(results);
+    setSearching(false);
+    // Optional: if you still want to propagate to parent
+    onSearch(query);
   };
 
+  
   // Fetch categories
   useEffect(() => {
     const fetchCategories = async () => {
@@ -119,6 +131,35 @@ export function HomePage({
           </div>
         )}
       </div>
+
+       {/* Search Results */}
+       {searching && (
+        <div className="text-center py-4 text-blue-700">Searching...</div>
+      )}
+
+      {searchResults.length > 0 && (
+        <div className="p-4">
+          <h2 className="text-lg font-bold text-blue-900 tracking-tight mb-2">
+            Search Results
+          </h2>
+          <div className="grid grid-cols-2 gap-4">
+            {searchResults.map((product) => (
+              <div
+                key={product.id}
+                className="p-3 border rounded-xl bg-white shadow-sm"
+              >
+                <img
+                   src={product.images?.[0]?.imagePath || "/images/placeholder.png"}
+                  alt={product.name}
+                  className="h-24 w-full object-cover rounded-md mb-2"
+                />
+                <h3 className="text-blue-900 font-medium">{product.name}</h3>
+               
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Footer / Info */}
       <div className="px-4 pb-8 text-center text-sm text-gray-500">

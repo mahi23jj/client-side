@@ -1,4 +1,4 @@
-import { authenticateTelegram } from "../utils/getToken";
+/*import { authenticateTelegram } from "../utils/getToken";
 
 
 const API_BASE_URL = "https://backend-ikou.onrender.com/api";
@@ -58,7 +58,7 @@ export async function apiFetch(
 
   return response.json();
 }
-/*
+*/
 // src/services/clientApi.ts
 const API_BASE_URL = "https://backend-ikou.onrender.com/api";
 
@@ -113,4 +113,3 @@ export async function apiFetch(
 
   return response.json();
 }
-*/

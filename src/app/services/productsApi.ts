@@ -1,3 +1,4 @@
+import { Product } from "../data/data";
 import { apiFetch } from "./clientApi";
 
 export async function getProductsByCategory(categoryId: string, page = 1, limit = 20) {
@@ -9,3 +10,24 @@ export async function getProductDetails(productId: string) {
   const result = await apiFetch(`/products/details/${productId}`);
   return result.data.product;
 }
+
+export const searchProducts = async (query: string): Promise<Product[]> => {
+  try {
+    const res = await fetch(
+      `https://backend-ikou.onrender.com/api/products/search?search=${encodeURIComponent(query)}`,
+      {
+        method: "GET",
+        headers: { accept: "*/*" },
+      }
+    );
+
+    const json = await res.json();
+
+    if (!res.ok) throw new Error(json.message || "Failed to search products");
+
+    return json.data.products || [];
+  } catch (err) {
+    console.error("Search error:", err);
+    return [];
+  }
+};
