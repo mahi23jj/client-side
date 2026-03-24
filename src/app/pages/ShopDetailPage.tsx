@@ -39,17 +39,23 @@ export function ShopDetailPage({
         const shopData = await getShopById(shopId);
         setShop(shopData);
 
-        const mappedProducts: ProductCardProduct[] = shopData.products.map((p: any) => ({
-          id: p.id,
-          name: p.name,
-          price: p.price,
-          description: "",
-          image: p.images?.[0]?.imagePath || "/placeholder-image.png",
-          shopId: shopData.id,
-          shopName: shopData.shopName,
-          rating: Number(p.ratingAverage ?? 0),
-          reviewCount: Number(p.reviewCount ?? 0),
-        }));
+const mappedProducts: ProductCardProduct[] = shopData.products.map((p: any) => {
+  console.log("SHOP PRODUCT RAW:", p);
+  return {
+    id: p.id,
+    name: p.name,
+    price: p.price,
+    description: "",
+    image: p.images?.[0]?.imagePath || "/placeholder-image.png",
+    shopId: shopData.id,
+    shopName: shopData.shopName,
+    rating: Number(p.ratingAverage ?? 0),
+    //reviewCount: Number(p.reviewCount ?? 0),
+    reviewCount: Number(p.ratingCount ?? 0),
+    // ✅ FIXED
+    ratingAverage: Number(p.ratingAverage ?? 0),
+  };
+});
         setShopProducts(mappedProducts);
       } catch (err) {
         console.error(err);
@@ -195,9 +201,11 @@ export function ShopDetailPage({
         {shopProducts.length === 0 ? (
           <EmptyState icon="📭" title="No products yet" description="This shop hasn't listed any products" />
         ) : (
+          
           <div className="grid grid-cols-2 gap-3">
             {shopProducts.map((product) => (
               <div key={product.id} className="transition hover:scale-[1.02]">
+                {/* Removed console.log to fix the error */}
                 <Productdisplay product={product} onClick={() => onProductSelect(product.id)} />
               </div>
             ))}

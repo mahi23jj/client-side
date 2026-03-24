@@ -11,6 +11,7 @@ interface ProductCardP {
 }
 
 export function Productdisplay({ product, onClick }: ProductCardP) {
+  console.log("FINAL PRODUCT:", product);
  // console.log("Product rating in card:", product.ratingAverage);
   return (
     <div
@@ -29,7 +30,12 @@ export function Productdisplay({ product, onClick }: ProductCardP) {
         <p className="text-sm text-gray-500 mb-2">{product.shopName}</p>
         <div className="flex items-center gap-1 mb-2">
           <StarRating rating={product.rating}  size="sm" />
-          {/*
+          <span>
+  {product.ratingAverage?.toFixed(1) ?? "0.0"} 
+  ({product.reviewCount})
+ 
+</span>
+          {/*  {product.reviewCount ? ` (${product.reviewCount})` : ""}
 <span className="text-xs text-gray-500">
   ({product.ratingCount || 0})
 </span>

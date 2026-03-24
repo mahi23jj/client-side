@@ -22,9 +22,11 @@ export function CategoryProductsPage({
   const [showFilters, setShowFilters] = useState(false);
   const [productsList, setProductsList] = useState<ProductCardProduct[]>([]);
   const [categoryName, setCategoryName] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(true); // ✅ loading state
 
   // Fetch products
   useEffect(() => {
+    setLoading(true); // start loading
     getProductsByCategory(categoryId)
       .then((data: any[]) => {
         const mapped: ProductCardProduct[] = data.map((p) => ({
@@ -42,7 +44,8 @@ export function CategoryProductsPage({
         setProductsList(mapped);
         if (data[0]?.category?.name) setCategoryName(data[0].category.name);
       })
-      .catch((err) => console.error("Error fetching products:", err));
+      .catch((err) => console.error("Error fetching products:", err))
+      .finally(() => setLoading(false)); // stop loading
   }, [categoryId]);
 
   // Sort products
@@ -56,7 +59,7 @@ export function CategoryProductsPage({
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
 
       {/* Header */}
-      <div className=" backdrop-blur-sm border-b sticky top-0 z-10">
+      <div className="backdrop-blur-sm border-b sticky top-0 z-10">
         <div className="px-4 py-3">
           <div className="flex items-center gap-3 mb-3">
             <button
@@ -95,7 +98,12 @@ export function CategoryProductsPage({
 
       {/* Products Grid */}
       <div className="p-4">
-        {sortedProducts.length === 0 ? (
+        {loading ? (
+          // ✅ Circular Progress Spinner
+          <div className="flex justify-center py-10">
+            <div className="w-12 h-12 border-4 border-blue-900 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        ) : sortedProducts.length === 0 ? (
           <EmptyState
             icon="📭"
             title="No products yet"

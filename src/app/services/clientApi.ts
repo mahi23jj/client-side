@@ -1,4 +1,4 @@
-/*import { authenticateTelegram } from "../utils/getToken";
+import { authenticateTelegram } from "../utils/getToken";
 
 
 const API_BASE_URL = "https://backend-ikou.onrender.com/api";
@@ -58,12 +58,13 @@ export async function apiFetch(
 
   return response.json();
 }
-*/
+/*
 // src/services/clientApi.ts
 const API_BASE_URL = "https://backend-ikou.onrender.com/api";
 
 // 🔑 Hardcoded token here
-const HARDCODED_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyOGIxZmI5Ny1iYmU0LTQwYWUtOTJmYS1iZjM3M2IxYmJmNzUiLCJyb2xlIjoiVVNFUiIsInVzZXJuYW1lIjoia3VrdSIsImlhdCI6MTc3MzQ5MjM0NiwiZXhwIjoxNzc0MDk3MTQ2fQ.YOUV_rQMk0UWcdTtgsAkVGZn478C0quqFem-hp4vpqs";
+const HARDCODED_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzMDc4YjQ5Ni1iYmMxLTQ2YWEtYWUxMy1lNjdjZmYxOTU4OTQiLCJyb2xlIjoiVVNFUiIsInVzZXJuYW1lIjoiY2FtcHVzX3VzZXIiLCJpYXQiOjE3NzQxODg1MDIsImV4cCI6MTc3NDc5MzMwMn0.2dYtTrLU4pWMiRHZYWZxaD0vkY98gslO34HbEVrbCw4";
+//"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyOGIxZmI5Ny1iYmU0LTQwYWUtOTJmYS1iZjM3M2IxYmJmNzUiLCJyb2xlIjoiVVNFUiIsInVzZXJuYW1lIjoia3VrdSIsImlhdCI6MTc3MzQ5MjM0NiwiZXhwIjoxNzc0MDk3MTQ2fQ.YOUV_rQMk0UWcdTtgsAkVGZn478C0quqFem-hp4vpqs";
 
 const AUTH_DEBUG_PREFIX = "[AUTH][apiFetch]";
 
@@ -113,3 +114,4 @@ export async function apiFetch(
 
   return response.json();
 }
+*/

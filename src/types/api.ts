@@ -56,6 +56,9 @@ description: string;
 rating: number;
 reviewCount: number; // <-- add this
 ratingAverage: number; // ⚠ required
+shop?: {
+  shopName: string;
+};
 }
 
 export interface ReviewRequestBody {

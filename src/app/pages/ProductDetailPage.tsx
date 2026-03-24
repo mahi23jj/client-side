@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState, useCallback } from "react";
 import { ArrowLeft, ArrowRight, Bookmark, ExternalLink, Star } from "lucide-react";
 import { StarRating } from "../components/StarRating";
@@ -33,6 +35,7 @@ export function ProductDetailPage({
   const [product, setProduct] = useState<any | null>(null);
   const [shop, setShop] = useState<any | null>(null);
   const [reviews, setReviews] = useState<any[]>([]);
+  const [visibleReviewsCount, setVisibleReviewsCount] = useState(3); // ✅ Show first 3 reviews initially
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -242,9 +245,25 @@ export function ProductDetailPage({
           </div>
         ) : (
           <div className="space-y-3 mt-3">
-            {reviews.map((review, index) => (
-              <ReviewCard key={index} review={review} />
+            {reviews.slice(0, visibleReviewsCount).map((review, index) => (
+              <ReviewCard 
+                key={index} 
+                review={review}
+                productRatingAverage={product.ratingAverage}
+                productRatingCount={reviews.length}
+              />
             ))}
+
+            {reviews.length > visibleReviewsCount && (
+              <div className="text-center mt-2">
+                <button
+                  onClick={() => setVisibleReviewsCount(reviews.length)}
+                  className="text-blue-600 hover:underline text-sm"
+                >
+                  See All Reviews ({reviews.length})
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
