@@ -21,6 +21,7 @@ export interface Seller {
   instagram?: string;
   telegram?: string;
   tiktok?: string;
+  other?: string[];
   mainPhone?: string;
   secondaryPhone?: string;
 }
@@ -33,6 +34,7 @@ export interface Shop {
   isOpen: boolean;
   status: string;
   followersCount: number;
+  isFollowed: boolean;
   profileImageUrl: string;
   products: Product[];
   seller: Seller;
