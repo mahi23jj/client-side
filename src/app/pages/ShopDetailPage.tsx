@@ -1,13 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ExternalLink, Instagram, Facebook, Calendar, Users, Flag } from "lucide-react";
 import { EmptyState } from "../components/EmptyState";
 import { ReportShopModal } from "../components/ReportShopModal";
 import React from "react";
-import { getShopById } from "../services/shopsApi";
 import { ProductCardProduct, Shop } from "../../types/api";
 import { reportShop } from "../services/reportApi";
 import { toggleFollowShopApi } from "../services/followApi";
 import { Productdisplay } from "../components/RatingStars";
+import { useProductsByShop, useShopDetail } from "../../hooks/useMarketplaceQueries";
 
 interface ShopDetailPageProps {
   shopId: string;
@@ -22,47 +22,56 @@ export function ShopDetailPage({
 }: ShopDetailPageProps) {
   const [showReportModal, setShowReportModal] = useState(false);
   const [shop, setShop] = useState<Shop | null>(null);
-  const [shopProducts, setShopProducts] = useState<ProductCardProduct[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data: shopData,
+    isLoading: shopLoading,
+    isFetching: shopFetching,
+    error: shopError,
+  } = useShopDetail(shopId);
+  const {
+    data: productsData = [],
+    isLoading: productsLoading,
+    isFetching: productsFetching,
+    error: productsError,
+  } = useProductsByShop(shopId);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      setError(null);
+    if (shopData) {
+      setShop(shopData as Shop);
+    }
+  }, [shopData]);
 
-      try {
-        const shopData = await getShopById(shopId);
-        setShop(shopData);
+  const shopProducts: ProductCardProduct[] = useMemo(
+    () =>
+      (productsData as any[]).map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        price: p.price,
+        description: p.description || "",
+        image: p.images?.[0]?.imagePath || "/placeholder-image.png",
+        shopId,
+        shopName: shop?.shopName || "Shop",
+        rating: Number(p.ratingAverage ?? 0),
+        reviewCount: Number(p.ratingCount ?? p.reviewCount ?? 0),
+        ratingAverage: Number(p.ratingAverage ?? 0),
+        isActive: p.isActive,
+      })),
+    [productsData, shop?.shopName, shopId]
+  );
 
-        // Transform API products to ProductCard format
-        const mappedProducts: ProductCardProduct[] = shopData.products.map((p: any) => ({
-          id: p.id,
-          name: p.name,
-          price: p.price,
-          description: "",
-          image: p.images?.[0]?.imagePath || "/placeholder-image.png",
-          shopId: shopData.id,
-          shopName: shopData.shopName,
-          rating: Number(p.ratingAverage ?? 0),
-          reviewCount: Number(p.ratingCount ?? 0),
-          ratingAverage: Number(p.ratingAverage ?? 0),
-        }));
-        setShopProducts(mappedProducts);
+  const isInitialLoading = (shopLoading || productsLoading) && !shop;
+  const hasError = shopError || productsError;
 
-      } catch (err) {
-        console.error(err);
-        setError("Failed to load shop data.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [shopId]);
-
-  if (loading) return <div className="p-4">Loading shop...</div>;
-  if (error) return <div className="p-4 text-red-500">{error}</div>;
+  if (isInitialLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-4 space-y-3">
+        <div className="h-10 w-28 rounded bg-gray-200 animate-pulse" />
+        <div className="h-40 rounded-xl bg-gray-200 animate-pulse" />
+        <div className="h-56 rounded-xl bg-gray-200 animate-pulse" />
+      </div>
+    );
+  }
+  if (hasError) return <div className="p-4 text-red-500">Failed to load shop data.</div>;
   if (!shop) return <div className="p-4">Shop not found</div>;
 
   const handleContactShop = () => {
@@ -153,6 +162,9 @@ export function ShopDetailPage({
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {(shopFetching || productsFetching) && (
+        <div className="text-xs text-gray-500 px-4 py-2 bg-white border-b">Refreshing shop...</div>
+      )}
       {/* Header */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="px-4 py-3">

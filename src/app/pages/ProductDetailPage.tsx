@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeft, Bookmark, ExternalLink, Star } from "lucide-react";
 import { StarRating } from "../components/StarRating";
 import { ReviewCard } from "../components/ReviewCard";
@@ -7,10 +7,10 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { useAppContext } from "../contexts/AppContext";
-import { getProductDetails } from "../services/productsApi";
 import React from "react";
 import { saveProduct, unsaveProduct } from "../services/savedApi";
 import { getReviewsByProduct } from "../services/reviewApi";
+import { useProductDetail } from "../../hooks/useMarketplaceQueries";
 
 interface ProductDetailPageProps {
   productId: string;
@@ -31,57 +31,32 @@ export function ProductDetailPage({
 }: ProductDetailPageProps) {
   const { isSaved, toggleSavedProduct } = useAppContext();
 
-  const [product, setProduct] = useState<any | null>(null);
-  const [shop, setShop] = useState<any | null>(null);
-  const [reviews, setReviews] = useState<any[]>([]);
+  const { data: product, isLoading, isFetching, error } = useProductDetail(productId);
+  const shop = product?.shop ?? null;
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [reviews, setReviews] = useState<any[]>([]);
 
   const [saving, setSaving] = useState(false);
 
-  // fetch function (useCallback prevents recreation)
-  const fetchProductData = useCallback(async (showLoader = false) => {
-    try {
-      if (showLoader) setLoading(true);
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const fetchedReviews = await getReviewsByProduct(productId);
+        setReviews(fetchedReviews);
+      } catch (err) {
+        console.error("Failed to load reviews", err);
+      }
+    };
 
-      const [fetchedProduct, fetchedReviews] = await Promise.all([
-        getProductDetails(productId),
-        getReviewsByProduct(productId),
-      ]);
-
-      setProduct(fetchedProduct);
-      setShop(fetchedProduct.shop);
-      setReviews(fetchedReviews);
-
-      setError(null);
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || "Failed to load product");
-    } finally {
-      if (showLoader) setLoading(false);
-    }
+    fetchReviews();
   }, [productId]);
 
-  // initial load
-  useEffect(() => {
-    fetchProductData(true);
-  }, [fetchProductData]);
-
-  // auto refresh every 30 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      fetchProductData(false);
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, [fetchProductData]);
-
-  // circular spinner
-  if (loading) {
+  if (isLoading && !product) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="w-10 h-10 border-4 border-black border-t-transparent rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-gray-50 p-4 space-y-3">
+        <div className="h-10 w-24 bg-gray-200 rounded animate-pulse" />
+        <div className="h-80 bg-gray-200 rounded-xl animate-pulse" />
+        <div className="h-24 bg-gray-200 rounded-xl animate-pulse" />
       </div>
     );
   }
@@ -89,7 +64,7 @@ export function ProductDetailPage({
   if (error)
     return (
       <div className="p-4 text-center text-red-500">
-        Error: {error}
+        Error: {(error as Error).message || "Failed to load product"}
       </div>
     );
 
@@ -140,16 +115,24 @@ export function ProductDetailPage({
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
+      {isFetching && (
+        <div className="text-xs text-gray-500 px-4 py-2 bg-white border-b">Refreshing product...</div>
+      )}
 
       {/* Header */}
       <div className="bg-white border-b sticky top-0 z-10">
         <div className="px-4 py-3 flex justify-between">
 
-          <button onClick={onBack}>
+          <button onClick={onBack} title="Go back" aria-label="Go back">
             <ArrowLeft className="w-5 h-5" />
           </button>
 
-          <button onClick={handleSaveProduct} disabled={saving}>
+          <button
+            onClick={handleSaveProduct}
+            disabled={saving}
+            title={isSaved(productId) ? "Unsave product" : "Save product"}
+            aria-label={isSaved(productId) ? "Unsave product" : "Save product"}
+          >
             <Bookmark
               className={`w-5 h-5 ${
                 isSaved(productId)
