@@ -72,7 +72,12 @@ export function SavedProductsPage({
       {/* Header */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="px-4 py-3 flex items-center gap-3">
-          <button onClick={onBack} className="p-1 hover:bg-red-100 rounded-lg">
+          <button
+            onClick={onBack}
+            className="p-1 hover:bg-red-100 rounded-lg"
+            title="Go back"
+            aria-label="Go back"
+          >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <h1 className="text-lg">Saved Products</h1>
@@ -98,12 +103,16 @@ export function SavedProductsPage({
                 key={product.id}
                 product={{
                   ...product,
+                  isActive: product.isActive,
                   image:
                     product.images?.[0]?.imagePath?.startsWith("http")
                       ? product.images[0].imagePath
                       : `https://backend-ikou.onrender.com${product.images?.[0]?.imagePath}` || "/placeholder-image.png",
                 }}
-                onClick={() => onProductSelect(product.id)}
+                onClick={() => {
+                  if (product.isActive === false) return;
+                  onProductSelect(product.id);
+                }}
                 onSave={() => handleSaveProduct(product.id, product.shopId)}
               />
               

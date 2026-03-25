@@ -72,6 +72,28 @@ export function ShopDetailPage({
   const handleFollowClick = async () => {
     if (!shop) return;
 
+    const previousState = {
+      isFollowed: shop.isFollowed,
+      followersCount: shop.followersCount,
+    };
+
+    const optimisticIsFollowed = !shop.isFollowed;
+    const optimisticFollowersCount = Math.max(
+      0,
+      shop.followersCount + (optimisticIsFollowed ? 1 : -1)
+    );
+
+    // Optimistic UI: update immediately, then sync with backend.
+    setShop((prevShop) =>
+      prevShop
+        ? {
+            ...prevShop,
+            isFollowed: optimisticIsFollowed,
+            followersCount: optimisticFollowersCount,
+          }
+        : prevShop
+    );
+
     try {
       const response = await toggleFollowShopApi(shopId) as any;
 
@@ -86,9 +108,10 @@ export function ShopDetailPage({
         const nextIsFollowed =
           typeof backendIsFollowed === "boolean"
             ? backendIsFollowed
-            : !prevShop.isFollowed;
+            : prevShop.isFollowed;
 
-        const computedFollowers = prevShop.followersCount + (nextIsFollowed ? 1 : -1);
+        const computedFollowers =
+          previousState.followersCount + (nextIsFollowed ? 1 : -1);
         const nextFollowersCount =
           typeof backendFollowersCount === "number"
             ? backendFollowersCount
@@ -102,6 +125,16 @@ export function ShopDetailPage({
       });
 
     } catch (err: any) {
+      // Roll back optimistic change if backend sync fails.
+      setShop((prevShop) =>
+        prevShop
+          ? {
+              ...prevShop,
+              isFollowed: previousState.isFollowed,
+              followersCount: previousState.followersCount,
+            }
+          : prevShop
+      );
       alert(err.message);
     }
   };
