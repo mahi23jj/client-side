@@ -8,7 +8,6 @@ import { ProductCardProduct, Shop } from "../../types/api";
 import { reportShop } from "../services/reportApi";
 import { toggleFollowShopApi } from "../services/followApi";
 import { Productdisplay } from "../components/RatingStars";
-import { StarRating } from "../components/StarRating";
 
 interface ShopDetailPageProps {
   shopId: string;
@@ -47,6 +46,7 @@ export function ShopDetailPage({
           shopName: shopData.shopName,
           rating: Number(p.ratingAverage ?? 0),
           reviewCount: Number(p.ratingCount ?? 0),
+          ratingAverage: Number(p.ratingAverage ?? 0),
         }));
         setShopProducts(mappedProducts);
 
@@ -66,29 +66,33 @@ export function ShopDetailPage({
   if (!shop) return <div className="p-4">Shop not found</div>;
 
   const handleContactShop = () => {
-    const telegramHandle = shop.seller.telegram?.replace("@", "");
-    const contactValue = telegramHandle || shop.seller.user.telegramId;
-    window.open(`https://t.me/${contactValue}`, "_blank");
+    window.open(`https://t.me/${shop.seller.user.telegramId}`, "_blank");
   };
 
   const handleFollowClick = async () => {
     if (!shop) return;
 
     try {
-      const response = await toggleFollowShopApi(shopId);
+      const response = await toggleFollowShopApi(shopId) as any;
+
+      // API sometimes returns fields directly or under data
+      const payload = response?.data ?? response;
+      const backendIsFollowed = payload?.isFollowed;
+      const backendFollowersCount = payload?.followersCount;
 
       setShop((prevShop) => {
         if (!prevShop) return prevShop;
 
         const nextIsFollowed =
-          typeof response.isFollowed === "boolean"
-            ? response.isFollowed
+          typeof backendIsFollowed === "boolean"
+            ? backendIsFollowed
             : !prevShop.isFollowed;
 
+        const computedFollowers = prevShop.followersCount + (nextIsFollowed ? 1 : -1);
         const nextFollowersCount =
-          typeof response.followersCount === "number"
-            ? response.followersCount
-            : prevShop.followersCount + (nextIsFollowed ? 1 : -1);
+          typeof backendFollowersCount === "number"
+            ? backendFollowersCount
+            : Math.max(0, computedFollowers);
 
         return {
           ...prevShop,
@@ -146,10 +150,6 @@ export function ShopDetailPage({
 
             {/* Trust Indicators */}
             <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-              <div className="flex items-center gap-2">
-                <StarRating rating={shop.rating} size="sm" />
-                <span>{shop.rating.toFixed(1)} rating</span>
-              </div>
               <div className="flex items-center gap-1">
                 <Users className="w-4 h-4" />
                 <span>{shop.followersCount} followers</span>
@@ -196,11 +196,10 @@ export function ShopDetailPage({
         <div className="flex gap-2">
           <button
             onClick={handleFollowClick}
-            className={`flex-1 px-4 py-2 rounded-lg transition-colors ${
-              shop.isFollowed
+            className={`flex-1 px-4 py-2 rounded-lg transition-colors ${shop.isFollowed
                 ? "bg-gray-100 text-gray-700"
                 : "bg-blue-600 text-white"
-            }`}
+              }`}
           >
             {shop.isFollowed ? "Following" : "Follow Shop"}
           </button>
