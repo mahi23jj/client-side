@@ -21,6 +21,7 @@ export interface Seller {
   instagram?: string;
   telegram?: string;
   tiktok?: string;
+  other?: string[];
   mainPhone?: string;
   secondaryPhone?: string;
 }
@@ -33,6 +34,7 @@ export interface Shop {
   isOpen: boolean;
   status: string;
   followersCount: number;
+  isFollowed: boolean;
   profileImageUrl: string;
   products: Product[];
   seller: Seller;
@@ -46,40 +48,41 @@ interface ProductCardProps {
 }
 
 export interface ProductCardProduct {
-id: string;
-name: string;
-price: number;
-image: string;
-shopId: string;
-shopName: string;
-description: string;
-rating: number;
-reviewCount: number; // <-- add this
-ratingAverage: number; // ⚠ required
+  isActive: boolean | undefined; // <-- add this
+  id: string;
+  name: string;
+  price: number;
+  image: string;
+  shopId: string;
+  shopName: string;
+  description: string;
+  rating: number;
+  reviewCount: number; // <-- add this
+  ratingAverage: number; // ⚠ required
 shop?: {
   shopName: string;
 };
 }
 
 export interface ReviewRequestBody {
-rating: number;
-comment?: string;
+  rating: number;
+  comment?: string;
 }
 
 // src/types/api.ts or a separate types file
 export interface Review {
-userName: string;
-rating: number;
-comment: string;
-date: string;
+  userName: string;
+  rating: number;
+  comment: string;
+  date: string;
 }
 
 export interface ProductCardProduct {
-id: string;
-name: string;
-price: number;
-image: string;
-shopName: string;
+  id: string;
+  name: string;
+  price: number;
+  image: string;
+  shopName: string;
 
 rating: number;        // ✅ REQUIRED
 reviewCount: number;   // ✅ REQUIRED
