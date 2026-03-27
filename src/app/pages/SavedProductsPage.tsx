@@ -102,6 +102,10 @@ export function SavedProductsPage({
                     product.images?.[0]?.imagePath?.startsWith("http")
                       ? product.images[0].imagePath
                       : `https://backend-ikou.onrender.com${product.images?.[0]?.imagePath}` || "/placeholder-image.png",
+
+                        // ✅ ADD THESE
+    rating: Number(product.ratingAverage ?? 0),
+    reviewCount: Number(product.ratingCount ?? 0),
                 }}
                 onClick={() => onProductSelect(product.id)}
                 onSave={() => handleSaveProduct(product.id, product.shopId)}
