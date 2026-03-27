@@ -28,8 +28,18 @@ export function ProductDetailPage({
 }: ProductDetailPageProps) {
   const { isSaved, toggleSavedProduct } = useAppContext();
 
+<<<<<<< HEAD
+  const [product, setProduct] = useState<any | null>(null);
+  const [shop, setShop] = useState<any | null>(null);
+  const [reviews, setReviews] = useState<any[]>([]);
+
+
+  const REVIEWS_PER_PAGE = 1; // how many reviews to show per page
+const [visibleReviewsCount, setVisibleReviewsCount] = useState(REVIEWS_PER_PAGE);
+=======
   const { data: product, isLoading, isFetching, error } = useProductDetail(productId);
   const shop = product?.shop ?? null;
+>>>>>>> 2a15a1caf1e11ee6b7926ca49b1571c1cdb293a1
 
   const [reviews, setReviews] = useState<any[]>([]);
 
@@ -240,16 +250,29 @@ export function ProductDetailPage({
               />
             ))}
 
-            {reviews.length > visibleReviewsCount && (
-              <div className="text-center mt-2">
-                <button
-                  onClick={() => setVisibleReviewsCount(reviews.length)}
-                  className="text-blue-600 hover:underline text-sm"
-                >
-                  See All Reviews ({reviews.length})
-                </button>
-              </div>
-            )}
+              {reviews.length > visibleReviewsCount && (
+                <div className="text-center mt-2">
+                  <button
+                    onClick={() => 
+                      setVisibleReviewsCount(prev => Math.min(prev + REVIEWS_PER_PAGE, reviews.length))
+                    }
+                    className="text-blue-600 hover:underline text-sm"
+                  >
+                    See More Reviews ({Math.min(visibleReviewsCount + REVIEWS_PER_PAGE, reviews.length)} of {reviews.length})
+                  </button>
+                </div>
+              )}
+
+                {visibleReviewsCount > REVIEWS_PER_PAGE && (
+                  <div className="text-center mt-1">
+                    <button
+                      onClick={() => setVisibleReviewsCount(REVIEWS_PER_PAGE)}
+                      className="text-gray-500 hover:underline text-sm"
+                    >
+                      Show Less
+                    </button>
+                  </div>
+                )}
           </div>
         )}
       </div>
