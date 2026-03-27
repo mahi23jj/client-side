@@ -2,8 +2,10 @@ import { Bookmark } from "lucide-react";
 import { CategoryCard } from "../components/CategoryCard";
 import { SearchBar } from "../components/SearchBar";
 import { useAppContext } from "../contexts/AppContext";
-import React from "react";
+import React, { useState } from "react";
 import { useCategories, usePrefetchProductsByCategory } from "../../hooks/useMarketplaceQueries";
+import { searchProducts } from "../services/productsApi";
+import { Product } from "../data/data";
 
 interface HomePageProps {
   onCategorySelect: (categoryId: string) => void;
@@ -17,6 +19,8 @@ export function HomePage({
   onViewSaved,
 }: HomePageProps) {
   const { savedProducts } = useAppContext();
+  const [searching, setSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState<Product[]>([]);
   const { data: categoriesList = [], isLoading, isFetching, error } = useCategories();
   const prefetchProductsByCategory = usePrefetchProductsByCategory();
 

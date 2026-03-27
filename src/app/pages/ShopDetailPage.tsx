@@ -8,6 +8,7 @@ import { reportShop } from "../services/reportApi";
 import { toggleFollowShopApi } from "../services/followApi";
 import { Productdisplay } from "../components/RatingStars";
 import { useProductsByShop, useShopDetail } from "../../hooks/useMarketplaceQueries";
+import { trackSocialMediaClick } from "../services/engagementApi";
 
 interface ShopDetailPageProps {
   shopId: string;
@@ -164,10 +165,6 @@ export function ShopDetailPage({
   };
 
   const yearsActive = 0;
-
-  if (loading) return <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100"><div className="w-12 h-12 border-4 border-blue-900 border-t-transparent rounded-full animate-spin"></div></div>;
-  if (error) return <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 text-red-600">{error}</div>;
-  if (!shop) return <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">Shop not found</div>;
 
   return (
     <div className="min-h-screen bg-gray-50">
