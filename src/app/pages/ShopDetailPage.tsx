@@ -1,17 +1,13 @@
-"use client";
-
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ExternalLink, Instagram, Facebook, Calendar, Users, Flag } from "lucide-react";
 import { EmptyState } from "../components/EmptyState";
 import { ReportShopModal } from "../components/ReportShopModal";
-import { useAppContext } from "../contexts/AppContext";
 import React from "react";
-import { getShopById } from "../services/shopsApi";
 import { ProductCardProduct, Shop } from "../../types/api";
 import { reportShop } from "../services/reportApi";
 import { toggleFollowShopApi } from "../services/followApi";
 import { Productdisplay } from "../components/RatingStars";
-import { trackSocialMediaClick } from "../services/engagementApi";
+import { useProductsByShop, useShopDetail } from "../../hooks/useMarketplaceQueries";
 
 interface ShopDetailPageProps {
   shopId: string;
@@ -24,48 +20,59 @@ export function ShopDetailPage({
   onBack,
   onProductSelect,
 }: ShopDetailPageProps) {
-  const { isFollowing, toggleFollowShop: toggleFollowLocal } = useAppContext();
   const [showReportModal, setShowReportModal] = useState(false);
   const [shop, setShop] = useState<Shop | null>(null);
-  const [shopProducts, setShopProducts] = useState<ProductCardProduct[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data: shopData,
+    isLoading: shopLoading,
+    isFetching: shopFetching,
+    error: shopError,
+  } = useShopDetail(shopId);
+  const {
+    data: productsData = [],
+    isLoading: productsLoading,
+    isFetching: productsFetching,
+    error: productsError,
+  } = useProductsByShop(shopId);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const shopData = await getShopById(shopId);
-        setShop(shopData);
+    if (shopData) {
+      setShop(shopData as Shop);
+    }
+  }, [shopData]);
 
-const mappedProducts: ProductCardProduct[] = shopData.products.map((p: any) => {
-  console.log("SHOP PRODUCT RAW:", p);
-  return {
-    id: p.id,
-    name: p.name,
-    price: p.price,
-    description: "",
-    image: p.images?.[0]?.imagePath || "/placeholder-image.png",
-    shopId: shopData.id,
-    shopName: shopData.shopName,
-    rating: Number(p.ratingAverage ?? 0),
-    //reviewCount: Number(p.reviewCount ?? 0),
-    reviewCount: Number(p.ratingCount ?? 0),
-    // ✅ FIXED
-    ratingAverage: Number(p.ratingAverage ?? 0),
-  };
-});
-        setShopProducts(mappedProducts);
-      } catch (err) {
-        console.error(err);
-        setError("Failed to load shop data.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [shopId]);
+  const shopProducts: ProductCardProduct[] = useMemo(
+    () =>
+      (productsData as any[]).map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        price: p.price,
+        description: p.description || "",
+        image: p.images?.[0]?.imagePath || "/placeholder-image.png",
+        shopId,
+        shopName: shop?.shopName || "Shop",
+        rating: Number(p.ratingAverage ?? 0),
+        reviewCount: Number(p.ratingCount ?? p.reviewCount ?? 0),
+        ratingAverage: Number(p.ratingAverage ?? 0),
+        isActive: p.isActive,
+      })),
+    [productsData, shop?.shopName, shopId]
+  );
+
+  const isInitialLoading = (shopLoading || productsLoading) && !shop;
+  const hasError = shopError || productsError;
+
+  if (isInitialLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-4 space-y-3">
+        <div className="h-10 w-28 rounded bg-gray-200 animate-pulse" />
+        <div className="h-40 rounded-xl bg-gray-200 animate-pulse" />
+        <div className="h-56 rounded-xl bg-gray-200 animate-pulse" />
+      </div>
+    );
+  }
+  if (hasError) return <div className="p-4 text-red-500">Failed to load shop data.</div>;
+  if (!shop) return <div className="p-4">Shop not found</div>;
 
   const handleContactShop = () => {
     window.open(`https://t.me/${shop?.seller.user.telegramId}`, "_blank");
@@ -73,16 +80,69 @@ const mappedProducts: ProductCardProduct[] = shopData.products.map((p: any) => {
 
   const handleFollowClick = async () => {
     if (!shop) return;
+
+    const previousState = {
+      isFollowed: shop.isFollowed,
+      followersCount: shop.followersCount,
+    };
+
+    const optimisticIsFollowed = !shop.isFollowed;
+    const optimisticFollowersCount = Math.max(
+      0,
+      shop.followersCount + (optimisticIsFollowed ? 1 : -1)
+    );
+
+    // Optimistic UI: update immediately, then sync with backend.
+    setShop((prevShop) =>
+      prevShop
+        ? {
+            ...prevShop,
+            isFollowed: optimisticIsFollowed,
+            followersCount: optimisticFollowersCount,
+          }
+        : prevShop
+    );
+
     try {
-      await toggleFollowShopApi(shopId);
-      toggleFollowLocal(shopId);
-      setShop({
-        ...shop,
-        followersCount: isFollowing(shopId)
-          ? shop.followersCount - 1
-          : shop.followersCount + 1,
+      const response = await toggleFollowShopApi(shopId) as any;
+
+      // API sometimes returns fields directly or under data
+      const payload = response?.data ?? response;
+      const backendIsFollowed = payload?.isFollowed;
+      const backendFollowersCount = payload?.followersCount;
+
+      setShop((prevShop) => {
+        if (!prevShop) return prevShop;
+
+        const nextIsFollowed =
+          typeof backendIsFollowed === "boolean"
+            ? backendIsFollowed
+            : prevShop.isFollowed;
+
+        const computedFollowers =
+          previousState.followersCount + (nextIsFollowed ? 1 : -1);
+        const nextFollowersCount =
+          typeof backendFollowersCount === "number"
+            ? backendFollowersCount
+            : Math.max(0, computedFollowers);
+
+        return {
+          ...prevShop,
+          isFollowed: nextIsFollowed,
+          followersCount: Math.max(0, nextFollowersCount),
+        };
       });
     } catch (err: any) {
+      // Roll back optimistic change if backend sync fails.
+      setShop((prevShop) =>
+        prevShop
+          ? {
+              ...prevShop,
+              isFollowed: previousState.isFollowed,
+              followersCount: previousState.followersCount,
+            }
+          : prevShop
+      );
       alert(err.message);
     }
   };
@@ -110,8 +170,10 @@ const mappedProducts: ProductCardProduct[] = shopData.products.map((p: any) => {
   if (!shop) return <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">Shop not found</div>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
-
+    <div className="min-h-screen bg-gray-50">
+      {(shopFetching || productsFetching) && (
+        <div className="text-xs text-gray-500 px-4 py-2 bg-white border-b">Refreshing shop...</div>
+      )}
       {/* Header */}
       <div className="bg-white/60 backdrop-blur-sm border-b border-gray-200 ">
         <div className="px-4 py-3 flex items-center justify-between">
@@ -175,23 +237,23 @@ const mappedProducts: ProductCardProduct[] = shopData.products.map((p: any) => {
             )}
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-2 mt-3">
-            <button
-              onClick={handleFollowClick}
-              className={`flex-1 px-4 py-2 rounded-lg transition-colors ${
-                isFollowing(shopId) ? "bg-gray-100 text-gray-700" : "bg-blue-900 text-white"
+        {/* Action Buttons */}
+        <div className="flex gap-2">
+          <button
+            onClick={handleFollowClick}
+            className={`flex-1 px-4 py-2 rounded-lg transition-colors ${shop.isFollowed
+                ? "bg-gray-100 text-gray-700"
+                : "bg-blue-600 text-white"
               }`}
-            >
-              {isFollowing(shopId) ? "Following" : "Follow Shop"}
-            </button>
-            <button
-              onClick={handleContactShop}
-              className="px-4 py-2 bg-white/50 backdrop-blur-sm rounded-lg hover:bg-blue-100 transition"
-            >
-              <ExternalLink className="w-5 h-5 text-blue-900" />
-            </button>
-          </div>
+          >
+            {shop.isFollowed ? "Following" : "Follow Shop"}
+          </button>
+          <button
+            onClick={handleContactShop}
+            className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+          >
+            <ExternalLink className="w-5 h-5" />
+          </button>
         </div>
       </div>
 

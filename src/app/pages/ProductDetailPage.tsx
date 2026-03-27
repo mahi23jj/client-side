@@ -1,17 +1,13 @@
-"use client";
-
-import { useEffect, useState, useCallback } from "react";
-import { ArrowLeft, ArrowRight, Bookmark, ExternalLink, Star } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowLeft, Bookmark, ExternalLink, Star } from "lucide-react";
 import { StarRating } from "../components/StarRating";
 import { ReviewCard } from "../components/ReviewCard";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { useAppContext } from "../contexts/AppContext";
-import { getProductDetails } from "../services/productsApi";
 import React from "react";
 import { saveProduct, unsaveProduct } from "../services/savedApi";
 import { getReviewsByProduct } from "../services/reviewApi";
-import { trackContactClick, trackShopView } from "../services/engagementApi";
-import { getShopById } from "../services/shopsApi";
+import { useProductDetail } from "../../hooks/useMarketplaceQueries";
 
 interface ProductDetailPageProps {
   productId: string;
@@ -32,62 +28,43 @@ export function ProductDetailPage({
 }: ProductDetailPageProps) {
   const { isSaved, toggleSavedProduct } = useAppContext();
 
-  const [product, setProduct] = useState<any | null>(null);
-  const [shop, setShop] = useState<any | null>(null);
-  const [reviews, setReviews] = useState<any[]>([]);
-  const [visibleReviewsCount, setVisibleReviewsCount] = useState(3); // ✅ Show first 3 reviews initially
+  const { data: product, isLoading, isFetching, error } = useProductDetail(productId);
+  const shop = product?.shop ?? null;
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [reviews, setReviews] = useState<any[]>([]);
 
   const [saving, setSaving] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
-  const fetchProductData = useCallback(async (showLoader = false) => {
-    try {
-      if (showLoader) setLoading(true);
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const fetchedReviews = await getReviewsByProduct(productId);
+        setReviews(fetchedReviews);
+      } catch (err) {
+        console.error("Failed to load reviews", err);
+      }
+    };
 
-      const [fetchedProduct, fetchedReviews] = await Promise.all([
-        getProductDetails(productId),
-        getReviewsByProduct(productId),
-      ]);
-
-      const fetchedShop = await getShopById(fetchedProduct.shop.id);
-
-      setProduct(fetchedProduct);
-      setShop(fetchedShop);
-      setReviews(fetchedReviews);
-
-      setError(null);
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || "Failed to load product");
-    } finally {
-      if (showLoader) setLoading(false);
-    }
+    fetchReviews();
   }, [productId]);
 
-  useEffect(() => {
-    fetchProductData(true);
-  }, [fetchProductData]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      fetchProductData(false);
-    }, 30000);
-    return () => clearInterval(interval);
-  }, [fetchProductData]);
-
-  if (loading) {
+  if (isLoading && !product) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-100">
-        <div className="w-10 h-10 border-4 border-blue-900 border-t-transparent rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-gray-50 p-4 space-y-3">
+        <div className="h-10 w-24 bg-gray-200 rounded animate-pulse" />
+        <div className="h-80 bg-gray-200 rounded-xl animate-pulse" />
+        <div className="h-24 bg-gray-200 rounded-xl animate-pulse" />
       </div>
     );
   }
 
   if (error)
-    return <div className="p-4 text-center text-red-500">Error: {error}</div>;
+    return (
+      <div className="p-4 text-center text-red-500">
+        Error: {(error as Error).message || "Failed to load product"}
+      </div>
+    );
 
   if (!product || !shop)
     return <div className="p-4 text-center">Product not found</div>;
@@ -127,16 +104,25 @@ export function ProductDetailPage({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 pb-20">
+    <div className="min-h-screen bg-gray-50 pb-20">
+      {isFetching && (
+        <div className="text-xs text-gray-500 px-4 py-2 bg-white border-b">Refreshing product...</div>
+      )}
 
       {/* Header */}
-      <div className="sticky top-0 z-20 backdrop-blur-lg bg-white/70 border-b border-white/40 shadow-sm">
-        <div className="px-4 py-3 flex justify-between items-center">
-          <button onClick={onBack}>
-            <ArrowLeft className="w-5 h-5 text-gray-700" />
+      <div className="bg-white border-b sticky top-0 z-10">
+        <div className="px-4 py-3 flex justify-between">
+
+          <button onClick={onBack} title="Go back" aria-label="Go back">
+            <ArrowLeft className="w-5 h-5" />
           </button>
 
-          <button onClick={handleSaveProduct} disabled={saving}>
+          <button
+            onClick={handleSaveProduct}
+            disabled={saving}
+            title={isSaved(productId) ? "Unsave product" : "Save product"}
+            aria-label={isSaved(productId) ? "Unsave product" : "Save product"}
+          >
             <Bookmark
               className={`w-5 h-5 transition ${
                 isSaved(productId)

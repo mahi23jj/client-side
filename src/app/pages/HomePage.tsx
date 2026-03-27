@@ -2,11 +2,8 @@ import { Bookmark } from "lucide-react";
 import { CategoryCard } from "../components/CategoryCard";
 import { SearchBar } from "../components/SearchBar";
 import { useAppContext } from "../contexts/AppContext";
-import React, { useEffect, useState } from "react";
-import { getCategories } from "../services/categoriesApi";
-import { Category } from "../../types/api";
-import { searchProducts } from "../services/productsApi";
-import { Product } from "../data/data";
+import React from "react";
+import { useCategories, usePrefetchProductsByCategory } from "../../hooks/useMarketplaceQueries";
 
 interface HomePageProps {
   onCategorySelect: (categoryId: string) => void;
@@ -20,13 +17,8 @@ export function HomePage({
   onViewSaved,
 }: HomePageProps) {
   const { savedProducts } = useAppContext();
-
-  const [categoriesList, setCategoriesList] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [searchResults, setSearchResults] = useState<Product[]>([]);
-  const [searching, setSearching] = useState(false);
-  
+  const { data: categoriesList = [], isLoading, isFetching, error } = useCategories();
+  const prefetchProductsByCategory = usePrefetchProductsByCategory();
 
   const handleSearch = async (query: string) => {
     if (!query.trim()) return;
@@ -38,28 +30,7 @@ export function HomePage({
     onSearch(query);
   };
 
-  
-  // Fetch categories
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await getCategories();
-        setCategoriesList(data);
-      } catch (err) {
-        console.error(err);
-        setError("Failed to fetch categories. Please reload the page.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCategories();
-
-    const interval = setInterval(fetchCategories, 60000);
-    return () => clearInterval(interval);
-  }, []);
+  const isInitialLoading = isLoading && categoriesList.length === 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
@@ -109,24 +80,38 @@ export function HomePage({
           Browse by Category
         </h2>
 
-        {loading ? (
-          <div className="flex justify-center py-16">
-            <div className="w-10 h-10 border-4 border-blue-900 border-t-transparent rounded-full animate-spin"></div>
+        {isFetching && !isInitialLoading && (
+          <p className="text-xs text-gray-500 mb-3">Refreshing categories...</p>
+        )}
+
+        {isInitialLoading ? (
+          <div className="grid grid-cols-2 gap-3">
+            {Array.from({ length: 6 }).map((_, idx) => (
+              <div key={idx} className="h-24 rounded-xl bg-gray-200 animate-pulse" />
+            ))}
           </div>
         ) : error ? (
-          <div className="text-center text-red-600 py-10">{error}</div>
+          <div className="text-center text-red-600 py-10">Failed to fetch categories. Please reload the page.</div>
         ) : categoriesList.length === 0 ? (
           <div className="text-center py-10 text-gray-500">
             No categories found.
           </div>
         ) : (
-          <div className="grid grid-cols-2  gap-4">
-            {categoriesList.map((category) => (
-              <CategoryCard
+          <div className="grid grid-cols-2 gap-3">
+            {categoriesList.map((category: any) => (
+              <div
                 key={category.id}
-                category={category}
-                onClick={() => onCategorySelect(category.id)}
-              />
+                onMouseEnter={() => prefetchProductsByCategory(category.id)}
+                onFocus={() => prefetchProductsByCategory(category.id)}
+              >
+                <CategoryCard
+                  category={category}
+                  onClick={() => {
+                    prefetchProductsByCategory(category.id);
+                    onCategorySelect(category.id);
+                  }}
+                />
+              </div>
             ))}
           </div>
         )}
