@@ -29,6 +29,7 @@ export function CategoryProductsPage({
     setLoading(true); // start loading
     getProductsByCategory(categoryId)
       .then((data: any[]) => {
+        console.log("CATEGORY DATA:", data);
         const mapped: ProductCardProduct[] = data.map((p) => ({
           id: p.id,
           name: p.name,
@@ -37,9 +38,9 @@ export function CategoryProductsPage({
           shopId: p.shop?.id || p.shopId || "",
           shopName: p.shop?.shopName || "Unknown",
           description: p.description || "",
-          rating: p.ratingAverage || 0,
-          reviewCount: p.reviewCount || 0,
-          ratingAverage: p.ratingAverage || 0,
+          rating: Number(p.ratingAverage ?? 0),
+          reviewCount: Number(p.ratingCount ?? 0), // ✅ FIXED
+          ratingAverage: Number(p.ratingAverage ?? 0),
         }));
         setProductsList(mapped);
         if (data[0]?.category?.name) setCategoryName(data[0].category.name);

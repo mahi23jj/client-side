@@ -30,7 +30,7 @@ export function Productdisplay({ product, onClick }: ProductCardP) {
         <p className="text-sm text-gray-500 mb-2">{product.shopName}</p>
         <div className="flex items-center gap-1 mb-2">
           <StarRating rating={product.rating}  size="sm" />
-          <span>
+          <span className="text-xs text-gray-500">
   {product.ratingAverage?.toFixed(1) ?? "0.0"} 
   ({product.reviewCount})
  
