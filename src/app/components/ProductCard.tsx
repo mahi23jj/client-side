@@ -29,11 +29,14 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
       </div>
       <div className="p-3">
         <h3 className="line-clamp-1 mb-1">{product.name}</h3>
-        <p className="text-sm text-gray-500 mb-2">{product.shopName}</p>
+        <p className="text-sm text-gray-500 mb-2"> {product.shop?.shopName}</p>
         <div className="flex items-center gap-1 mb-2">
-          <StarRating rating={product.ratingAverage}  size="sm" />
+          <StarRating rating={product.rating}  size="sm" />
+          
           <span className="text-xs text-gray-500">
-            ({product.reviewCount || 0})
+          {product.ratingAverage?.toFixed(1) } 
+          ({product.reviewCount})
+           
           </span>
         </div>
         <p className="text-blue-600">${product.price}</p>

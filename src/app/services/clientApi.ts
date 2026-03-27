@@ -1,6 +1,7 @@
-// src/services/clientApi.ts
+import { authenticateTelegram } from "../utils/getToken";
+
+
 const API_BASE_URL = "https://backend-ikou.onrender.com/api";
-import { getToken } from "../utils/auth";
 
 const AUTH_DEBUG_PREFIX = "[AUTH][apiFetch]";
 
@@ -10,28 +11,81 @@ function maskToken(token: string | null | undefined): string {
   return `${token.slice(0, 8)}...${token.slice(-4)} (len=${token.length})`;
 }
 
-/**
- * Wrapper fetch function for all API calls
- * @param endpoint API path, e.g., "/save_product"
- * @param options Fetch options (method, body, etc.)
- * @param token Optional token (if not provided, will read from URL)
- */
 export async function apiFetch(
   endpoint: string,
-  options: RequestInit = {},
-  token?: string
+  options: RequestInit = {}
 ) {
   console.log(`${AUTH_DEBUG_PREFIX} request start`, {
     endpoint,
     method: options.method || "GET",
-    hasExplicitToken: Boolean(token),
   });
 
-  const authToken = token || getToken();
-  if (!authToken) throw new Error("No auth token found. Please login via Telegram bot.");
 
-  console.log(`${AUTH_DEBUG_PREFIX} resolved token`, {
-    tokenSource: token ? "function-arg" : "auth-utils",
+  const authToken = await authenticateTelegram();
+
+  console.log(`${AUTH_DEBUG_PREFIX} token resolved`, {
+    token: maskToken(authToken),
+  });
+
+  // ❗ Important: handle missing token
+  if (!authToken) {
+    console.error(`${AUTH_DEBUG_PREFIX} NO TOKEN FOUND`);
+    throw new Error("Authentication token missing. Open from Telegram.");
+  }
+
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${authToken}`,
+    },
+    ...options,
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    console.error(`${AUTH_DEBUG_PREFIX} request failed`, {
+      endpoint,
+      status: response.status,
+      bodyPreview: text.slice(0, 200),
+    });
+    throw new Error(`Request failed (${response.status}): ${text}`);
+  }
+
+  console.log(`${AUTH_DEBUG_PREFIX} request success`, {
+    endpoint,
+    status: response.status,
+  });
+
+  return response.json();
+}
+/*
+// src/services/clientApi.ts
+const API_BASE_URL = "https://backend-ikou.onrender.com/api";
+
+// 🔑 Hardcoded token here
+const HARDCODED_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzMDc4YjQ5Ni1iYmMxLTQ2YWEtYWUxMy1lNjdjZmYxOTU4OTQiLCJyb2xlIjoiVVNFUiIsInVzZXJuYW1lIjoiY2FtcHVzX3VzZXIiLCJpYXQiOjE3NzQxODg1MDIsImV4cCI6MTc3NDc5MzMwMn0.2dYtTrLU4pWMiRHZYWZxaD0vkY98gslO34HbEVrbCw4";
+//"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyOGIxZmI5Ny1iYmU0LTQwYWUtOTJmYS1iZjM3M2IxYmJmNzUiLCJyb2xlIjoiVVNFUiIsInVzZXJuYW1lIjoia3VrdSIsImlhdCI6MTc3MzQ5MjM0NiwiZXhwIjoxNzc0MDk3MTQ2fQ.YOUV_rQMk0UWcdTtgsAkVGZn478C0quqFem-hp4vpqs";
+
+const AUTH_DEBUG_PREFIX = "[AUTH][apiFetch]";
+
+function maskToken(token: string | null | undefined): string {
+  if (!token) return "<none>";
+  if (token.length <= 12) return `${token.slice(0, 4)}...`;
+  return `${token.slice(0, 8)}...${token.slice(-4)} (len=${token.length})`;
+}
+
+export async function apiFetch(
+  endpoint: string,
+  options: RequestInit = {}
+) {
+  console.log(`${AUTH_DEBUG_PREFIX} request start`, {
+    endpoint,
+    method: options.method || "GET",
+  });
+
+  const authToken = HARDCODED_TOKEN;
+
+  console.log(`${AUTH_DEBUG_PREFIX} using hardcoded token`, {
     token: maskToken(authToken),
   });
 
@@ -60,3 +114,4 @@ export async function apiFetch(
 
   return response.json();
 }
+*/

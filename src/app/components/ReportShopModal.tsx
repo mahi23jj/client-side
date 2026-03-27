@@ -10,8 +10,8 @@ export function ReportShopModal({ shopName, onClose, onSubmit }: ReportShopModal
   const [selectedReason, setSelectedReason] = useState("Inappropriate Content");
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white p-6 rounded-lg w-96">
+    <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-100 bg-opacity-50">
+      <div className="bg-white p-6 rounded-lg w-96 border border-gray-300 shadow-lg">
         <h2 className="text-lg mb-4">Report {shopName}</h2>
 
         <label className="block mb-2">Reason</label>

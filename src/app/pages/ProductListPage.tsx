@@ -28,7 +28,6 @@ export function ProductListPage() {
     "newest"
   );
 
-  // Fetch products
   const fetchProducts = async () => {
     if (!categoryId) return;
 
@@ -37,9 +36,6 @@ export function ProductListPage() {
       setError(null);
 
       const res = await getProductsByCategory(categoryId);
-      console.log("FULL API RESPONSE:", res);
-      console.log("PRODUCTS:", res.data.products);
-
       const products = res.data.products;
 
       const mapped: ProductCardProduct[] = products.map((p: any) => ({
@@ -63,7 +59,6 @@ export function ProductListPage() {
     }
   };
 
-  // Fetch category + products
   useEffect(() => {
     if (!categoryId) return;
 
@@ -86,51 +81,51 @@ export function ProductListPage() {
 
     fetchCategoryAndProducts();
 
-    // Auto-refresh every 60 seconds
     const interval = setInterval(fetchCategoryAndProducts, 60000);
     return () => clearInterval(interval);
   }, [categoryId]);
 
-  // Sorted products
   const sortedProducts = [...allProducts].sort((a, b) => {
     if (sortBy === "price-low") return a.price - b.price;
     if (sortBy === "price-high") return b.price - a.price;
     return 0;
   });
 
-  // Loading spinner
+  // 🔄 LOADING
   if (loading)
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-100">
+        <div className="w-12 h-12 border-4 border-blue-900 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
 
   if (error)
     return (
-      <div className="text-center text-red-600 py-10">
-        <p>{error}</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-100">
+        <p className="text-red-600">{error}</p>
       </div>
     );
 
-  if (!category)
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
+  if (!category) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
+
+      {/* Header */}
       <Header title={`${category.icon} ${category.name}`} />
 
-      <div className="sticky top-[73px] z-10 px-4 py-3 bg-white border-b">
-        <div className="flex justify-between">
-          <span>{sortedProducts.length} products</span>
+      {/* Sort Bar with Glass Effect */}
+      <div className="sticky top-[73px] z-10 px-3 mt-2">
+        <div className="flex justify-between items-center px-4 py-3
+          rounded-2xl bg-white/80 backdrop-blur-md border border-white/40 shadow-sm">
+
+          <span className="text-sm text-blue-900">
+            {sortedProducts.length} products
+          </span>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="gap-2">
                 <SlidersHorizontal size={16} />
                 Sort
               </Button>
@@ -151,19 +146,26 @@ export function ProductListPage() {
         </div>
       </div>
 
-      <main className="p-4">
+      {/* Products Grid */}
+      <main className="p-3 mt-2">
         {sortedProducts.length > 0 ? (
           <div className="grid grid-cols-2 gap-3">
             {sortedProducts.map((product) => (
-              <ProductCard
+              <div
                 key={product.id}
-                product={product}
-                onClick={() => console.log(product.id)}
-              />
+                className="transition hover:scale-[1.02]"
+              >
+                <ProductCard
+                  product={product}
+                  onClick={() => console.log(product.id)}
+                />
+              </div>
             ))}
           </div>
         ) : (
-          <div className="text-center py-10">No products</div>
+          <div className="text-center py-10 text-gray-500">
+            No products
+          </div>
         )}
       </main>
     </div>

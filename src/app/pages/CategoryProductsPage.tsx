@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { ArrowLeft, SlidersHorizontal } from "lucide-react";
-//import { Product } from "../types"; // your type definitions
 import { ProductCard } from "../components/ProductCard";
 import { EmptyState } from "../components/EmptyState";
 import { ProductCardProduct } from "../../types/api";
@@ -45,23 +44,24 @@ export function CategoryProductsPage({
   const sortedProducts = [...productsList].sort((a, b) => {
     if (sortBy === "price-low") return a.price - b.price;
     if (sortBy === "price-high") return b.price - a.price;
-    return 0; // newest or default
+    return 0;
   });
 
   const isInitialLoading = isLoading && productsList.length === 0;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
+
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+      <div className="backdrop-blur-sm border-b sticky top-0 z-10">
         <div className="px-4 py-3">
           <div className="flex items-center gap-3 mb-3">
             <button onClick={onBack} className="p-1 hover:bg-gray-100 rounded-lg" title="Go back" aria-label="Go back">
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="text-lg">{categoryName || "Category"}</h1>
-              <p className="text-sm text-gray-500">{sortedProducts.length} products</p>
+              <h1 className="text-lg font-medium text-blue-900">{categoryName || "Category"}</h1>
+              <p className="text-sm text-blue-800">{sortedProducts.length} products</p>
             </div>
           </div>
 
@@ -69,9 +69,9 @@ export function CategoryProductsPage({
           <div className="flex gap-2">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="px-3 py-1.5 bg-gray-100 rounded-lg text-sm flex items-center gap-2"
+              className="px-3 py-1.5 bg-blue-50 backdrop-blur-sm rounded-lg text-sm flex items-center gap-2 hover:bg-blue-100 transition"
             >
-              <SlidersHorizontal className="w-4 h-4" />
+              <SlidersHorizontal className="w-4 h-4 text-blue-900" />
               Filters
             </button>
             <select
@@ -112,11 +112,12 @@ export function CategoryProductsPage({
         ) : (
           <div className="grid grid-cols-2 gap-3">
             {sortedProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onClick={() => onProductSelect(product.id)}
-              />
+              <div key={product.id} className="transition hover:scale-[1.02]">
+                <ProductCard
+                  product={product}
+                  onClick={() => onProductSelect(product.id)}
+                />
+              </div>
             ))}
           </div>
         )}

@@ -59,6 +59,9 @@ export interface ProductCardProduct {
   rating: number;
   reviewCount: number; // <-- add this
   ratingAverage: number; // ⚠ required
+shop?: {
+  shopName: string;
+};
 }
 
 export interface ReviewRequestBody {
@@ -81,9 +84,12 @@ export interface ProductCardProduct {
   image: string;
   shopName: string;
 
-  rating: number;        // ✅ REQUIRED
-  reviewCount: number;   // ✅ REQUIRED
-  ratingAverage: number;  // <-- add this if you really want
+rating: number;        // ✅ REQUIRED
+reviewCount: number;   // ✅ REQUIRED
+ratingAverage: number;  // <-- add this if you really want
+shop?: {
+  shopName: string;
+};
 }
 
 export interface Category {

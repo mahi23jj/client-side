@@ -75,7 +75,7 @@ export function ShopDetailPage({
   if (!shop) return <div className="p-4">Shop not found</div>;
 
   const handleContactShop = () => {
-    window.open(`https://t.me/${shop.seller.user.telegramId}`, "_blank");
+    window.open(`https://t.me/${shop?.seller.user.telegramId}`, "_blank");
   };
 
   const handleFollowClick = async () => {
@@ -132,7 +132,6 @@ export function ShopDetailPage({
           followersCount: Math.max(0, nextFollowersCount),
         };
       });
-
     } catch (err: any) {
       // Roll back optimistic change if backend sync fails.
       setShop((prevShop) =>
@@ -148,6 +147,12 @@ export function ShopDetailPage({
     }
   };
 
+  const handleSocialClick = (url: string) => {
+    if (!url) return;
+    trackSocialMediaClick(shopId).catch(() => {});
+    window.open(url, "_blank");
+  };
+
   const handleReportSubmit = async (reason: string) => {
     try {
       await reportShop(shopId, { reason });
@@ -158,7 +163,11 @@ export function ShopDetailPage({
     }
   };
 
-  const yearsActive = 0; // optional
+  const yearsActive = 0;
+
+  if (loading) return <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100"><div className="w-12 h-12 border-4 border-blue-900 border-t-transparent rounded-full animate-spin"></div></div>;
+  if (error) return <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 text-red-600">{error}</div>;
+  if (!shop) return <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">Shop not found</div>;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -166,76 +175,67 @@ export function ShopDetailPage({
         <div className="text-xs text-gray-500 px-4 py-2 bg-white border-b">Refreshing shop...</div>
       )}
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <button onClick={onBack} className="p-1 hover:bg-gray-100 rounded-lg">
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-              <h1 className="text-lg">Shop Details</h1>
-            </div>
-            <button
-              onClick={() => setShowReportModal(true)}
-              className="p-1 hover:bg-gray-100 rounded-lg"
-              title="Report shop"
-            >
-              <Flag className="w-5 h-5 text-gray-600" />
+      <div className="bg-white/60 backdrop-blur-sm border-b border-gray-200 ">
+        <div className="px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button onClick={onBack} className="p-1 hover:bg-blue-100 rounded-lg transition">
+              <ArrowLeft className="w-5 h-5 text-gray-900" />
             </button>
+            <h1 className="text-lg font-medium text-blue-900">Shop Details</h1>
           </div>
+          <button
+            onClick={() => setShowReportModal(true)}
+            className="p-1 hover:bg-blue-100 rounded-lg transition"
+            title="Report shop"
+          >
+            <Flag className="w-5 h-5 text-gray-900" />
+          </button>
         </div>
       </div>
 
       {/* Shop Info */}
-      <div className="bg-white p-4 border-b border-gray-200">
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex-1">
-            <h2 className="mb-2">{shop.shopName}</h2>
-            <p className="text-sm text-gray-700 mb-3">{shop.bio}</p>
+      <div className="bg-white/50 backdrop-blur-sm p-4 border-b border-gray-200">
+        <div className="flex flex-col gap-3 mb-3">
+        <div className="flex items-center gap-4">
+          <img
+            src={shop.profileImageUrl}
+            alt="Shop logo"
+            className="w-16 h-16 rounded-full object-cover border-2 border-white shadow"
+          />
 
-            {/* Trust Indicators */}
-            <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-              <div className="flex items-center gap-1">
-                <Users className="w-4 h-4" />
-                <span>{shop.followersCount} followers</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Calendar className="w-4 h-4" />
-                <span>
-                  {yearsActive > 0 ? `${yearsActive}+ years` : "New shop"}
-                </span>
-              </div>
-            </div>
+          <div className="flex flex-col justify-center">
+            <h3 className="text-lg font-semibold text-gray-800">
+              {shop.shopName}
+            </h3>
+            <p className="text-sm text-gray-500">{shop.bio}</p>
           </div>
         </div>
+          
+          {/* Trust Indicators */}
+          <div className="flex flex-wrap gap-4 text-sm text-black">
+            <div className="flex items-center gap-1"><Users className="w-4 h-4" /> <span className="text-gray-600">{shop.followersCount} followers</span></div>
+            <div className="flex items-center gap-1"><Calendar className="w-4 h-4" /> <span className="text-gray-600">{yearsActive > 0 ? `${yearsActive}+ years` : "New shop"}</span></div>
+          </div>
 
-        {/* Social Media Links */}
-        {(shop.seller.instagram || shop.seller.tiktok) && (
-          <div className="flex gap-2 mb-4">
+          {/* Social Media Links */}
+          <div className="flex gap-2">
             {shop.seller.instagram && (
-              <a
-                href={`https://instagram.com/${shop.seller.instagram}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg text-sm hover:bg-gray-200 transition-colors"
+              <button
+                onClick={() => handleSocialClick(`https://instagram.com/${shop.seller.instagram}`)}
+                className="flex items-center gap-2 px-3 py-2 bg-white/50 backdrop-blur-sm rounded-lg hover:bg-blue-100 transition"
               >
-                <Instagram className="w-4 h-4" />
-                Instagram
-              </a>
+                <Instagram className="w-4 h-4 text-blue-900" /> Instagram
+              </button>
             )}
             {shop.seller.tiktok && (
-              <a
-                href={`https://tiktok.com/@${shop.seller.tiktok}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg text-sm hover:bg-gray-200 transition-colors"
+              <button
+                onClick={() => handleSocialClick(`https://tiktok.com/@${shop.seller.tiktok}`)}
+                className="flex items-center gap-2 px-3 py-2 bg-white/50 backdrop-blur-sm rounded-lg hover:bg-blue-100 transition"
               >
-                <Facebook className="w-4 h-4" />
-                Tiktok
-              </a>
+                <Facebook className="w-4 h-4 text-blue-900" /> Tiktok
+              </button>
             )}
           </div>
-        )}
 
         {/* Action Buttons */}
         <div className="flex gap-2">
@@ -259,22 +259,17 @@ export function ShopDetailPage({
 
       {/* Shop Products */}
       <div className="p-4">
-        <h3 className="mb-4">Products ({shopProducts.length})</h3>
-
+        <h3 className="mb-4 text-blue-900 font-medium">Products ({shopProducts.length})</h3>
         {shopProducts.length === 0 ? (
-          <EmptyState
-            icon="📭"
-            title="No products yet"
-            description="This shop hasn't listed any products"
-          />
+          <EmptyState icon="📭" title="No products yet" description="This shop hasn't listed any products" />
         ) : (
+          
           <div className="grid grid-cols-2 gap-3">
             {shopProducts.map((product) => (
-              <Productdisplay
-                key={product.id}
-                product={product}
-                onClick={() => onProductSelect(product.id)}
-              />
+              <div key={product.id} className="transition hover:scale-[1.02]">
+                {/* Removed console.log to fix the error */}
+                <Productdisplay product={product} onClick={() => onProductSelect(product.id)} />
+              </div>
             ))}
           </div>
         )}
