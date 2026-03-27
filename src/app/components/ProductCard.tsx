@@ -11,11 +11,14 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onClick }: ProductCardProps) {
- // console.log("Product rating in card:", product.ratingAverage);
+  const isUnavailable = product.isActive === false;
+
   return (
     <div
-      onClick={onClick}
-      className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow w-full text-left cursor-pointer"
+      onClick={isUnavailable ? undefined : onClick}
+      className={`relative bg-white rounded-xl overflow-hidden shadow-sm transition-shadow w-full text-left ${
+        isUnavailable ? "cursor-not-allowed" : "cursor-pointer hover:shadow-md"
+      }`}
     >
       <div className="aspect-square bg-gray-100 overflow-hidden">
         <ImageWithFallback
@@ -38,6 +41,12 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
         </div>
         <p className="text-blue-600">${product.price}</p>
       </div>
+
+      {isUnavailable && (
+        <div className="absolute inset-0 bg-white/75 flex items-center justify-center px-3">
+          <p className="text-red-600 font-semibold text-center">Currently unavailable</p>
+        </div>
+      )}
     </div>
   );
 }
