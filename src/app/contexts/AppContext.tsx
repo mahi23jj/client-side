@@ -4,7 +4,7 @@ import { getSavedProducts, saveProduct, unsaveProduct } from "../services/savedA
 interface AppContextType {
   savedProducts: Set<string>;
   followedShops: Set<string>;
-  toggleSavedProduct: (productId: string,  shopId: string) => void;
+  toggleSavedProduct: (productId: string, shopId: string) => void;
   toggleFollowShop: (shopId: string) => void;
   isSaved: (productId: string) => boolean;
   isFollowing: (shopId: string) => boolean;
@@ -12,16 +12,25 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-export function AppProvider({ children }: { children: ReactNode }) {
-  const [savedProducts, setSavedProducts] = useState<Set<string>>(() => {
-    const saved = localStorage.getItem("savedProducts");
-    return saved ? new Set(JSON.parse(saved)) : new Set();
-  });
+function parseStoredStringArray(key: string): string[] {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter((item) => typeof item === "string") : [];
+  } catch {
+    return [];
+  }
+}
 
-  const [followedShops, setFollowedShops] = useState<Set<string>>(() => {
-    const followed = localStorage.getItem("followedShops");
-    return followed ? new Set(JSON.parse(followed)) : new Set();
-  });
+export function AppProvider({ children }: { children: ReactNode }) {
+  const [savedProducts, setSavedProducts] = useState<Set<string>>(
+    () => new Set(parseStoredStringArray("savedProducts"))
+  );
+
+  const [followedShops, setFollowedShops] = useState<Set<string>>(
+    () => new Set(parseStoredStringArray("followedShops"))
+  );
 
   // ✅ Sync with backend API on load
   useEffect(() => {
@@ -50,15 +59,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const toggleSavedProduct = async (productId: string, shopId: string) => {
     setSavedProducts((prev) => {
       const next = new Set(prev);
-  
+
       if (next.has(productId)) {
-        unsaveProduct(productId);   // API call
+        unsaveProduct(productId, shopId);   // API call
         next.delete(productId);
       } else {
         saveProduct(productId, shopId);     // API call
         next.add(productId);
       }
-  
+
       return next;
     });
   };

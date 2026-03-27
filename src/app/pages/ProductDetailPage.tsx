@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, Bookmark, ExternalLink, Star } from "lucide-react";
+import { ArrowLeft, ArrowRight, Bookmark, ExternalLink, Star } from "lucide-react";
 import { StarRating } from "../components/StarRating";
 import { ReviewCard } from "../components/ReviewCard";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
@@ -8,6 +8,7 @@ import React from "react";
 import { saveProduct, unsaveProduct } from "../services/savedApi";
 import { getReviewsByProduct } from "../services/reviewApi";
 import { useProductDetail } from "../../hooks/useMarketplaceQueries";
+import { trackContactClick, trackShopView } from "../services/engagementApi";
 
 interface ProductDetailPageProps {
   productId: string;
@@ -28,19 +29,11 @@ export function ProductDetailPage({
 }: ProductDetailPageProps) {
   const { isSaved, toggleSavedProduct } = useAppContext();
 
-<<<<<<< HEAD
-  const [product, setProduct] = useState<any | null>(null);
-  const [shop, setShop] = useState<any | null>(null);
-  const [reviews, setReviews] = useState<any[]>([]);
-
-
-  const REVIEWS_PER_PAGE = 1; // how many reviews to show per page
-const [visibleReviewsCount, setVisibleReviewsCount] = useState(REVIEWS_PER_PAGE);
-=======
   const { data: product, isLoading, isFetching, error } = useProductDetail(productId);
   const shop = product?.shop ?? null;
->>>>>>> 2a15a1caf1e11ee6b7926ca49b1571c1cdb293a1
 
+  const REVIEWS_PER_PAGE = 1;
+  const [visibleReviewsCount, setVisibleReviewsCount] = useState(REVIEWS_PER_PAGE);
   const [reviews, setReviews] = useState<any[]>([]);
 
   const [saving, setSaving] = useState(false);
@@ -171,6 +164,8 @@ const [visibleReviewsCount, setVisibleReviewsCount] = useState(REVIEWS_PER_PAGE)
                 <button
                   key={index}
                   onClick={() => setSelectedImageIndex(index)}
+                  title={`View image ${index + 1}`}
+                  aria-label={`View image ${index + 1}`}
                   className={`border rounded-lg overflow-hidden ${
                     index === selectedImageIndex
                       ? "border-blue-600"
