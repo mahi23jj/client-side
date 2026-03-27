@@ -198,7 +198,10 @@ export function SearchResultsPage({
             {sortedProducts.map((product) => (
               <ProductCard
                 key={product.id}
-                product={product}
+                product={{
+                  ...product,
+                  ratingAverage: product.rating, // Map `rating` to `ratingAverage`
+                }}
                 onClick={() => onProductSelect(product.id)}
               />
             ))}

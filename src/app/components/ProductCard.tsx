@@ -31,9 +31,10 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
           <StarRating rating={product.ratingAverage}  size="sm" />
           <span>
   {product.ratingAverage?.toFixed(1) ?? "0.0"} 
-  ({product.reviewCount})
+ 
  
 </span>
+ 
           <span className="text-xs text-gray-500">
             ({product.reviewCount || 0}) 
           </span>
