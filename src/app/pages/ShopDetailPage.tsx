@@ -96,10 +96,10 @@ export function ShopDetailPage({
     setShop((prevShop) =>
       prevShop
         ? {
-            ...prevShop,
-            isFollowed: optimisticIsFollowed,
-            followersCount: optimisticFollowersCount,
-          }
+          ...prevShop,
+          isFollowed: optimisticIsFollowed,
+          followersCount: optimisticFollowersCount,
+        }
         : prevShop
     );
 
@@ -137,10 +137,10 @@ export function ShopDetailPage({
       setShop((prevShop) =>
         prevShop
           ? {
-              ...prevShop,
-              isFollowed: previousState.isFollowed,
-              followersCount: previousState.followersCount,
-            }
+            ...prevShop,
+            isFollowed: previousState.isFollowed,
+            followersCount: previousState.followersCount,
+          }
           : prevShop
       );
       alert(err.message);
@@ -149,7 +149,7 @@ export function ShopDetailPage({
 
   const handleSocialClick = (url: string) => {
     if (!url) return;
-    trackSocialMediaClick(shopId).catch(() => {});
+    trackSocialMediaClick(shopId).catch(() => { });
     window.open(url, "_blank");
   };
 
@@ -196,21 +196,21 @@ export function ShopDetailPage({
       {/* Shop Info */}
       <div className="bg-white/50 backdrop-blur-sm p-4 border-b border-gray-200">
         <div className="flex flex-col gap-3 mb-3">
-        <div className="flex items-center gap-4">
-          <img
-            src={shop.profileImageUrl}
-            alt="Shop logo"
-            className="w-16 h-16 rounded-full object-cover border-2 border-white shadow"
-          />
+          <div className="flex items-center gap-4">
+            <img
+              src={shop.profileImageUrl}
+              alt="Shop logo"
+              className="w-16 h-16 rounded-full object-cover border-2 border-white shadow"
+            />
 
-          <div className="flex flex-col justify-center">
-            <h3 className="text-lg font-semibold text-gray-800">
-              {shop.shopName}
-            </h3>
-            <p className="text-sm text-gray-500">{shop.bio}</p>
+            <div className="flex flex-col justify-center">
+              <h3 className="text-lg font-semibold text-gray-800">
+                {shop.shopName}
+              </h3>
+              <p className="text-sm text-gray-500">{shop.bio}</p>
+            </div>
           </div>
-        </div>
-          
+
           {/* Trust Indicators */}
           <div className="flex flex-wrap gap-4 text-sm text-black">
             <div className="flex items-center gap-1"><Users className="w-4 h-4" /> <span className="text-gray-600">{shop.followersCount} followers</span></div>
@@ -237,23 +237,24 @@ export function ShopDetailPage({
             )}
           </div>
 
-        {/* Action Buttons */}
-        <div className="flex gap-2">
-          <button
-            onClick={handleFollowClick}
-            className={`flex-1 px-4 py-2 rounded-lg transition-colors ${shop.isFollowed
+          {/* Action Buttons */}
+          <div className="flex gap-2">
+            <button
+              onClick={handleFollowClick}
+              className={`flex-1 px-4 py-2 rounded-lg transition-colors ${shop.isFollowed
                 ? "bg-gray-100 text-gray-700"
                 : "bg-blue-600 text-white"
-              }`}
-          >
-            {shop.isFollowed ? "Following" : "Follow Shop"}
-          </button>
-          <button
-            onClick={handleContactShop}
-            className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-          >
-            <ExternalLink className="w-5 h-5" />
-          </button>
+                }`}
+            >
+              {shop.isFollowed ? "Following" : "Follow Shop"}
+            </button>
+            <button
+              onClick={handleContactShop}
+              className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              <ExternalLink className="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -263,7 +264,7 @@ export function ShopDetailPage({
         {shopProducts.length === 0 ? (
           <EmptyState icon="📭" title="No products yet" description="This shop hasn't listed any products" />
         ) : (
-          
+
           <div className="grid grid-cols-2 gap-3">
             {shopProducts.map((product) => (
               <div key={product.id} className="transition hover:scale-[1.02]">
