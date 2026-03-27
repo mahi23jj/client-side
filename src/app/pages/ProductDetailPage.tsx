@@ -35,7 +35,10 @@ export function ProductDetailPage({
   const [product, setProduct] = useState<any | null>(null);
   const [shop, setShop] = useState<any | null>(null);
   const [reviews, setReviews] = useState<any[]>([]);
-  const [visibleReviewsCount, setVisibleReviewsCount] = useState(3); // ✅ Show first 3 reviews initially
+
+
+  const REVIEWS_PER_PAGE = 1; // how many reviews to show per page
+const [visibleReviewsCount, setVisibleReviewsCount] = useState(REVIEWS_PER_PAGE);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -254,16 +257,29 @@ export function ProductDetailPage({
               />
             ))}
 
-            {reviews.length > visibleReviewsCount && (
-              <div className="text-center mt-2">
-                <button
-                  onClick={() => setVisibleReviewsCount(reviews.length)}
-                  className="text-blue-600 hover:underline text-sm"
-                >
-                  See All Reviews ({reviews.length})
-                </button>
-              </div>
-            )}
+              {reviews.length > visibleReviewsCount && (
+                <div className="text-center mt-2">
+                  <button
+                    onClick={() => 
+                      setVisibleReviewsCount(prev => Math.min(prev + REVIEWS_PER_PAGE, reviews.length))
+                    }
+                    className="text-blue-600 hover:underline text-sm"
+                  >
+                    See More Reviews ({Math.min(visibleReviewsCount + REVIEWS_PER_PAGE, reviews.length)} of {reviews.length})
+                  </button>
+                </div>
+              )}
+
+                {visibleReviewsCount > REVIEWS_PER_PAGE && (
+                  <div className="text-center mt-1">
+                    <button
+                      onClick={() => setVisibleReviewsCount(REVIEWS_PER_PAGE)}
+                      className="text-gray-500 hover:underline text-sm"
+                    >
+                      Show Less
+                    </button>
+                  </div>
+                )}
           </div>
         )}
       </div>
