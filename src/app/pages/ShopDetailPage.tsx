@@ -77,7 +77,9 @@ export function ShopDetailPage({
   if (!shop) return <div className="p-4">Shop not found</div>;
 
   const handleContactShop = () => {
-    window.open(`https://t.me/${shop?.seller.user.telegramId}`, "_blank");
+    const telegramId = shop.seller?.user?.telegramId;
+    if (!telegramId) return;
+    window.open(`https://t.me/${telegramId}`, "_blank");
   };
 
   const handleFollowClick = async () => {
@@ -217,17 +219,17 @@ export function ShopDetailPage({
 
           {/* Social Media Links */}
           <div className="flex gap-2">
-            {shop.seller.instagram && (
+            {shop.seller?.instagram && (
               <button
-                onClick={() => handleSocialClick(`https://instagram.com/${shop.seller.instagram}`)}
+                onClick={() => handleSocialClick(`https://instagram.com/${shop.seller?.instagram}`)}
                 className="flex items-center gap-2 px-3 py-2 bg-white/50 backdrop-blur-sm rounded-lg hover:bg-blue-100 transition"
               >
                 <Instagram className="w-4 h-4 text-blue-900" /> Instagram
               </button>
             )}
-            {shop.seller.tiktok && (
+            {shop.seller?.tiktok && (
               <button
-                onClick={() => handleSocialClick(`https://tiktok.com/@${shop.seller.tiktok}`)}
+                onClick={() => handleSocialClick(`https://tiktok.com/@${shop.seller?.tiktok}`)}
                 className="flex items-center gap-2 px-3 py-2 bg-white/50 backdrop-blur-sm rounded-lg hover:bg-blue-100 transition"
               >
                 <Facebook className="w-4 h-4 text-blue-900" /> Tiktok

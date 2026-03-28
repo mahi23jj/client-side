@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, Bookmark, ExternalLink, Star } from "lucide-react";
 import React from "react";
 
+
 import { StarRating } from "../components/StarRating";
 import { ReviewCard } from "../components/ReviewCard";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
@@ -14,6 +15,7 @@ import { trackContactClick, trackShopView } from "../services/engagementApi";
 import { getShopById } from "../services/shopsApi";
 
 const REVIEWS_PER_PAGE = 5;
+
 
 interface ProductDetailPageProps {
   productId: string;
@@ -29,13 +31,16 @@ export function ProductDetailPage({
   onWriteReview,
 }: ProductDetailPageProps) {
   const { isSaved, toggleSavedProduct } = useAppContext();
-  const { data: product, isLoading, error, isFetching } = useProductDetail(productId);
 
-  const shop = product?.shop ?? product?.data?.shop ?? null;
 
   // ✅ NEW: full shop state
   const [fullShop, setFullShop] = useState<any>(null);
 
+  const { data: product, isLoading, isFetching, error } = useProductDetail(productId);
+  const shop = product?.shop ?? null;
+
+  const REVIEWS_PER_PAGE = 1;
+  
   const [reviews, setReviews] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -169,6 +174,35 @@ export function ProductDetailPage({
               className="w-full h-full object-cover rounded-2xl"
             />
           </div>
+
+          {/* Thumbnails */}
+          {product.images.length > 1 && (
+            <div className="flex gap-2 overflow-x-auto mt-2">
+              {product.images.map((img: any, index: number) => (
+                <button
+                  key={index}
+                  onClick={() => setSelectedImageIndex(index)}
+                  title={`View image ${index + 1}`}
+                  aria-label={`View image ${index + 1}`}
+                  className={`border rounded-lg overflow-hidden ${
+                    index === selectedImageIndex
+                      ? "border-blue-600"
+                      : "border-gray-300"
+                  }`}
+                >
+                  <ImageWithFallback
+                    src={
+                      img.imagePath?.startsWith("http")
+                        ? img.imagePath
+                        : `https://backend-ikou.onrender.com${img.imagePath}`
+                    }
+                    alt={`${product.name} ${index}`}
+                    className="w-20 h-20 object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="md:w-1/2">
