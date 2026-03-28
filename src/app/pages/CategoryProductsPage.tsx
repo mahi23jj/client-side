@@ -37,6 +37,7 @@ export function CategoryProductsPage({
     reviewCount: p.reviewCount || p.ratingCount || 0,
     ratingAverage: p.ratingAverage || 0,
     isActive: p.isActive,
+    categoryId: p.category?.id || "",
   }));
 
   const categoryName = (rawProducts as any[])?.[0]?.category?.name || "";

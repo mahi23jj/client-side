@@ -45,6 +45,7 @@ export function useProductDetail(productId?: string) {
   });
 }
 
+
 export function useShopDetail(shopId?: string) {
   return useQuery({
     queryKey: ["shop", "detail", shopId],
