@@ -55,6 +55,7 @@ export function ShopDetailPage({
         rating: Number(p.ratingAverage ?? 0),
         reviewCount: Number(p.ratingCount ?? p.reviewCount ?? 0),
         ratingAverage: Number(p.ratingAverage ?? 0),
+        categoryId: p.categoryId || null,
         isActive: p.isActive,
       })),
     [productsData, shop?.shopName, shopId]
@@ -267,7 +268,7 @@ export function ShopDetailPage({
           <div className="grid grid-cols-2 gap-3">
             {shopProducts.map((product) => (
               <div key={product.id} className="transition hover:scale-[1.02]">
-                {/* Removed console.log to fix the error */}
+                
                 <Productdisplay product={product} onClick={() => onProductSelect(product.id)} />
               </div>
             ))}

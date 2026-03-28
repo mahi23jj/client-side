@@ -8,6 +8,21 @@ interface ReportShopModalProps {
 
 export function ReportShopModal({ shopName, onClose, onSubmit }: ReportShopModalProps) {
   const [selectedReason, setSelectedReason] = useState("Inappropriate Content");
+  const [customReason, setCustomReason] = useState("");
+
+  const isOtherSelected = selectedReason === "Other";
+
+  const handleSubmit = () => {
+    if (isOtherSelected) {
+      if (!customReason.trim()) {
+        alert("Please write your reason.");
+        return;
+      }
+      onSubmit(customReason);
+    } else {
+      onSubmit(selectedReason);
+    }
+  };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-100 bg-opacity-50">
@@ -27,12 +42,23 @@ export function ReportShopModal({ shopName, onClose, onSubmit }: ReportShopModal
           <option value="Other">Other</option>
         </select>
 
+        {/* ✅ Show textarea ONLY when "Other" is selected */}
+        {isOtherSelected && (
+          <textarea
+            value={customReason}
+            onChange={(e) => setCustomReason(e.target.value)}
+            placeholder="Please describe the issue..."
+            className="w-full border rounded p-2 mb-4 min-h-[80px] resize-none"
+          />
+        )}
+
         <div className="flex justify-end gap-2">
           <button onClick={onClose} className="px-4 py-2 rounded border">
             Cancel
           </button>
+
           <button
-            onClick={() => onSubmit(selectedReason)}
+            onClick={handleSubmit}
             className="px-4 py-2 rounded bg-blue-600 text-white"
           >
             Submit
