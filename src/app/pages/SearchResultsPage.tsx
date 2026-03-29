@@ -72,12 +72,11 @@ export function SearchResultsPage({
     fetchProducts();
   }, [searchQuery]);
 
-  // Apply category filter
+
   const filteredProducts = products.filter(
     (p) => selectedCategory === "all" || p.categoryId === selectedCategory
   );
 
-  // Sorting
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     switch (sortBy) {
       case "price-low":
@@ -87,7 +86,7 @@ export function SearchResultsPage({
       case "rating":
         return b.ratingAverage - a.ratingAverage;
       default:
-        return 0; // relevance
+        return 0; 
     }
   });
 

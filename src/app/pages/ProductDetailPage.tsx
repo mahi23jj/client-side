@@ -14,7 +14,7 @@ import { useProductDetail } from "../../hooks/useMarketplaceQueries";
 import { trackContactClick, trackShopView } from "../services/engagementApi";
 import { getShopById } from "../services/shopsApi";
 
-const REVIEWS_PER_PAGE = 5;
+//const REVIEWS_PER_PAGE = 5;
 
 
 interface ProductDetailPageProps {
@@ -39,7 +39,7 @@ export function ProductDetailPage({
   const { data: product, isLoading, isFetching, error } = useProductDetail(productId);
   const shop = product?.shop ?? null;
 
-  const REVIEWS_PER_PAGE = 1;
+  const REVIEWS_PER_PAGE = 5;
   
   const [reviews, setReviews] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
@@ -213,14 +213,57 @@ export function ProductDetailPage({
         </div>
       </div>
 
-      {/* Reviews */}
+      {/* Reviews 
       <div className="mt-3 mx-3 p-4 bg-white rounded-2xl shadow-sm">
         <h3>Reviews ({reviews.length})</h3>
 
         {reviews.map((review, index) => (
           <ReviewCard key={index} review={review} />
         ))}
-      </div>
+      </div>*/}
+      {/* Reviews */}
+<div className="bg-white mt-3 mx-3 p-4 rounded-2xl shadow-sm">
+  <div className="flex items-center justify-between mb-3">
+    <h3 className="font-semibold text-lg">
+      Reviews ({reviews.length})
+    </h3>
+
+    <button
+      onClick={() =>
+        onWriteReview(productId, shop.id, product.name)
+      }
+      className="text-sm text-blue-900 hover:text-blue-600"
+    >
+      Write Review
+    </button>
+  </div>
+
+  {reviews.length === 0 ? (
+    <div className="text-center py-8 text-gray-500">
+      <Star className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+      <p className="text-sm">No reviews yet</p>
+      <p className="text-xs mt-1">Be the first to review!</p>
+    </div>
+  ) : (
+    <div className="space-y-3">
+      {reviews.slice(0, visibleReviewsCount).map((review, index) => (
+        <ReviewCard key={index} review={review} />
+      ))}
+
+      {/* Optional: Load more */}
+      {visibleReviewsCount < reviews.length && (
+        <button
+          onClick={() =>
+            setVisibleReviewsCount((prev) => prev + REVIEWS_PER_PAGE)
+          }
+          className="text-sm text-blue-600 hover:underline mt-2"
+        >
+          Load more
+        </button>
+      )}
+    </div>
+  )}
+</div>
 
       {/* ✅ Shop Section (ONLY image logic changed) */}
       <div className="mt-3 mx-3 p-4 rounded-2xl bg-blue-50/60 backdrop-blur-md border border-blue-100 shadow-sm">
