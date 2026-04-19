@@ -3,6 +3,7 @@ import { ArrowLeft, ExternalLink, Instagram, Facebook, Calendar, Users, Flag } f
 import { EmptyState } from "../components/EmptyState";
 import { ReportShopModal } from "../components/ReportShopModal";
 import React from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { ProductCardProduct, Shop } from "../../types/api";
 import { reportShop } from "../services/reportApi";
 import { toggleFollowShopApi } from "../services/followApi";
@@ -21,6 +22,7 @@ export function ShopDetailPage({
   onBack,
   onProductSelect,
 }: ShopDetailPageProps) {
+  const queryClient = useQueryClient();
   const [showReportModal, setShowReportModal] = useState(false);
   const [shop, setShop] = useState<Shop | null>(null);
   const {
@@ -95,16 +97,31 @@ export function ShopDetailPage({
       shop.followersCount + (optimisticIsFollowed ? 1 : -1)
     );
 
+    // Keep local state and query cache in sync so revisiting the page uses fresh follow state.
+    const applyFollowState = (isFollowed: boolean, followersCount: number) => {
+      setShop((prevShop) =>
+        prevShop
+          ? {
+              ...prevShop,
+              isFollowed,
+              followersCount,
+            }
+          : prevShop
+      );
+
+      queryClient.setQueryData(["shop", "detail", shopId], (prev: Shop | undefined) =>
+        prev
+          ? {
+              ...prev,
+              isFollowed,
+              followersCount,
+            }
+          : prev
+      );
+    };
+
     // Optimistic UI: update immediately, then sync with backend.
-    setShop((prevShop) =>
-      prevShop
-        ? {
-          ...prevShop,
-          isFollowed: optimisticIsFollowed,
-          followersCount: optimisticFollowersCount,
-        }
-        : prevShop
-    );
+    applyFollowState(optimisticIsFollowed, optimisticFollowersCount);
 
     try {
       const response = await toggleFollowShopApi(shopId) as any;
@@ -114,38 +131,25 @@ export function ShopDetailPage({
       const backendIsFollowed = payload?.isFollowed;
       const backendFollowersCount = payload?.followersCount;
 
-      setShop((prevShop) => {
-        if (!prevShop) return prevShop;
+      const nextIsFollowed =
+        typeof backendIsFollowed === "boolean"
+          ? backendIsFollowed
+          : optimisticIsFollowed;
 
-        const nextIsFollowed =
-          typeof backendIsFollowed === "boolean"
-            ? backendIsFollowed
-            : prevShop.isFollowed;
+      const computedFollowers =
+        previousState.followersCount + (nextIsFollowed ? 1 : -1);
+      const nextFollowersCount =
+        typeof backendFollowersCount === "number"
+          ? backendFollowersCount
+          : Math.max(0, computedFollowers);
 
-        const computedFollowers =
-          previousState.followersCount + (nextIsFollowed ? 1 : -1);
-        const nextFollowersCount =
-          typeof backendFollowersCount === "number"
-            ? backendFollowersCount
-            : Math.max(0, computedFollowers);
+      applyFollowState(nextIsFollowed, Math.max(0, nextFollowersCount));
 
-        return {
-          ...prevShop,
-          isFollowed: nextIsFollowed,
-          followersCount: Math.max(0, nextFollowersCount),
-        };
-      });
+      // Revalidate in background so cache stays aligned with server response shape.
+      queryClient.invalidateQueries({ queryKey: ["shop", "detail", shopId] });
     } catch (err: any) {
       // Roll back optimistic change if backend sync fails.
-      setShop((prevShop) =>
-        prevShop
-          ? {
-            ...prevShop,
-            isFollowed: previousState.isFollowed,
-            followersCount: previousState.followersCount,
-          }
-          : prevShop
-      );
+      applyFollowState(previousState.isFollowed, previousState.followersCount);
       alert(err.message);
     }
   };
@@ -177,7 +181,12 @@ export function ShopDetailPage({
       <div className="bg-white/60 backdrop-blur-sm border-b border-gray-200 ">
         <div className="px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <button onClick={onBack} className="p-1 hover:bg-blue-100 rounded-lg transition">
+            <button
+              onClick={onBack}
+              className="p-1 hover:bg-blue-100 rounded-lg transition"
+              aria-label="Go back"
+              title="Go back"
+            >
               <ArrowLeft className="w-5 h-5 text-gray-900" />
             </button>
             <h1 className="text-lg font-medium text-blue-900">Shop Details</h1>
@@ -250,6 +259,8 @@ export function ShopDetailPage({
             <button
               onClick={handleContactShop}
               className="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              aria-label="Contact shop"
+              title="Contact shop"
             >
               <ExternalLink className="w-5 h-5" />
             </button>
