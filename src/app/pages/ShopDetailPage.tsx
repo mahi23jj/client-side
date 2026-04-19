@@ -10,6 +10,7 @@ import { toggleFollowShopApi } from "../services/followApi";
 import { Productdisplay } from "../components/RatingStars";
 import { useProductsByShop, useShopDetail } from "../../hooks/useMarketplaceQueries";
 import { trackSocialMediaClick } from "../services/engagementApi";
+import { useAppContext } from "../contexts/AppContext";
 
 interface ShopDetailPageProps {
   shopId: string;
@@ -23,6 +24,7 @@ export function ShopDetailPage({
   onProductSelect,
 }: ShopDetailPageProps) {
   const queryClient = useQueryClient();
+  const { followedShops, toggleFollowShop } = useAppContext();
   const [showReportModal, setShowReportModal] = useState(false);
   const [shop, setShop] = useState<Shop | null>(null);
   const {
@@ -40,9 +42,16 @@ export function ShopDetailPage({
 
   useEffect(() => {
     if (shopData) {
-      setShop(shopData as Shop);
+      const backendShop = shopData as Shop;
+      const persistedIsFollowed = followedShops.has(shopId);
+
+      setShop({
+        ...backendShop,
+        // Prefer persisted local follow state when backend payload is stale or missing.
+        isFollowed: persistedIsFollowed || Boolean(backendShop.isFollowed),
+      });
     }
-  }, [shopData]);
+  }, [shopData, shopId, followedShops]);
 
   const shopProducts: ProductCardProduct[] = useMemo(
     () =>
@@ -118,6 +127,11 @@ export function ShopDetailPage({
             }
           : prev
       );
+
+      const persistedState = followedShops.has(shopId);
+      if (persistedState !== isFollowed) {
+        toggleFollowShop(shopId);
+      }
     };
 
     // Optimistic UI: update immediately, then sync with backend.
