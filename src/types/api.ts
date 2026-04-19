@@ -59,6 +59,7 @@ export interface ProductCardProduct {
   rating: number;
   reviewCount: number; // <-- add this
   ratingAverage: number; // ⚠ required
+  categoryId: string; // Added categoryId property
 shop?: {
   shopName: string;
 };

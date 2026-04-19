@@ -2,10 +2,10 @@ import { Bookmark } from "lucide-react";
 import { CategoryCard } from "../components/CategoryCard";
 import { SearchBar } from "../components/SearchBar";
 import { useAppContext } from "../contexts/AppContext";
-import React, { useState } from "react";
+import React from "react";
 import { useCategories, usePrefetchProductsByCategory } from "../../hooks/useMarketplaceQueries";
 import { searchProducts } from "../services/productsApi";
-import { Product } from "../data/data";
+import { Product } from "../../types/api";
 
 interface HomePageProps {
   onCategorySelect: (categoryId: string) => void;
@@ -19,9 +19,9 @@ export function HomePage({
   onViewSaved,
 }: HomePageProps) {
   const { savedProducts } = useAppContext();
-  const [searching, setSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<Product[]>([]);
+  const [searching, setSearching] = React.useState(false);
   const { data: categoriesList = [], isLoading, isFetching, error } = useCategories();
+  const [searchResults, setSearchResults] = React.useState<Product[]>([]);
   const prefetchProductsByCategory = usePrefetchProductsByCategory();
 
   const handleSearch = async (query: string) => {
@@ -80,12 +80,10 @@ export function HomePage({
       {/* Categories Section/part*/}
 
       <div className="p-4">
-        <h2 className="text-lg font-bold text-blue-900 tracking-tight mb-4">
-          Browse by Category
-        </h2>
+       
 
         {isFetching && !isInitialLoading && (
-          <p className="text-xs text-gray-500 mb-3">Refreshing categories...</p>
+          <p className="text-xs text-gray-500 mb-3"></p>
         )}
 
         {isInitialLoading ? (
